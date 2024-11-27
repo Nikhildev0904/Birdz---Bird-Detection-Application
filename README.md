@@ -1,4 +1,4 @@
-# coffee_app
+# Birdz
 
 A new Flutter project.
 
