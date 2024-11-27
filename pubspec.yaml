@@ -33,6 +33,7 @@ dependencies:
   http: ^0.13.4
   image_picker: ^0.8.4+3
   url_launcher: ^6.0.10
+  
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -43,7 +44,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  
+  flutter_launcher_icons: ^0.9.2
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -76,7 +77,9 @@ flutter:
     - assets/animations/b3.json
     - assets/animations/b4.json
     - assets/animations/loading.json
-    - assets/splash.png
+    - assets/Painted Stork.jpg
+    - assets/animations/splash.json
+    
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -88,7 +91,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
 flutter_icons:
   android: true
-  image_path: "assets/logo.png"
+  image_path: "assets/logo.jpg"
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

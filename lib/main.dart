@@ -62,7 +62,7 @@ class _SplashWrapperState extends State<SplashWrapper> {
   }
 
   _navigateToHome() async {
-    await Future.delayed(Duration(seconds: 2)); // Duration of splash screen
+    await Future.delayed(Duration(seconds: 6)); // Duration of splash screen
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (context) => HomeScreen()),
     );
@@ -75,30 +75,24 @@ class _SplashWrapperState extends State<SplashWrapper> {
 }
 
 
+
+
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.black,
-              const Color.fromARGB(255, 173, 210, 174),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        color: Colors.green[100], // Set the background color
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset(
-                'assets/splash.png',
-                width: 220, // Replace with your logo path
+              // Lottie Animation
+              Lottie.asset(
+                'assets/animations/splash.json', // Replace with your Lottie animation file path
+                width: 400, // Adjust size as needed
               ),
-              SizedBox(height: 5),
+                            
             ],
           ),
         ),
@@ -106,6 +100,7 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
+
 
 
 class HomeScreen extends StatefulWidget {
@@ -179,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Classify',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.list),
+            icon: Icon(Icons.flutter_dash),
             label: 'Birds',
           ),
           BottomNavigationBarItem(
@@ -207,7 +202,7 @@ class BirdRepository {
           "An intelligent, opportunistic feeder with glossy black plumage. Feeds on insects, fruits, and small animals, known for loud cawing calls. \n\nLocation: Urban areas, farmlands, forests, and wetlands worldwide, including the Indian subcontinent."
     },
     {
-      "name": "Black-headed Ibis",
+      "name": "Black-headed ibis",
       "image": "assets/Black-headed ibis.JPG", // Replace with your image path
       "description":
           "A large wading bird with a distinct black head and long, down-curved bill, forages in shallow water for fish, frogs, and invertebrates. Known for a low, grating croak. \n\nLocation: Wetlands, marshes, and rice paddies across the Indian subcontinent and Southeast Asia."
@@ -219,20 +214,20 @@ class BirdRepository {
           "A medium-sized stork with a gap in its beak suited for gripping snails. Often seen foraging in shallow water, mostly silent. \n\nLocation: Wetlands, marshes, and rice fields in South Asia and Southeast Asia."
     },
     {
-      "name": "Ashy-crowned Sparrow-Lark",
+      "name": "Ashy crowned sparrow lark",
       "image":
           "assets/Ashy crowned sparrow lark.jpg", // Replace with your image path
       "description":
           "A small, stout lark with grey-brown plumage, seen running on the ground. Feeds on seeds and insects, male sings a soft buzzing song during flight displays. \n\nLocation: Dry open plains, scrublands, and agricultural fields across the Indian subcontinent."
     },
     {
-      "name": "Red-wattled Lapwing",
+      "name": "Red-wattled lapwing",
       "image": "assets/Red-wattled lapwing.jpg", // Replace with your image path
       "description":
           "Medium-sized wader with striking red wattles near its beak. Known for its loud, sharp “did-he-do-it” call. \n\nLocation: Farmland, wetlands, and grasslands across the Indian subcontinent."
     },
     {
-      "name": "Paddyfield Pipit",
+      "name": "Paddyfield pipit",
       "image": "assets/Paddyfield pipit.jpg", // Replace with your image path
       "description":
           "Small brownish pipit with streaked upperparts, active forager on insects and seeds in open fields. Call is a soft “seet-seet” in flight. \n\nLocation: Open fields, grasslands, and cultivated areas across the Indian subcontinent."
@@ -256,7 +251,7 @@ class BirdRepository {
           "Colorful bird with vivid blue wings, catches insects in flight. Known for its “rak-rak-rak” call. \n\nLocation: Open country, agricultural lands, and wooded areas across the Indian subcontinent."
     },
     {
-      "name": "Yellow-wattled Lapwing",
+      "name": "Yellow-wattled lapwing",
       "image":
           "assets/Yellow wattled lapwing.jpg", // Replace with your image path
       "description":
@@ -276,6 +271,14 @@ class BirdRepository {
       "description":
           "Large waterbird with spotted bill, seen gliding over water for fish. Usually silent except for low grunts. \n\nLocation: Large water bodies, lakes, and reservoirs across the Indian subcontinent and Southeast Asia.",
     },
+    {
+      "name": "Painted Stork",
+      "image":
+          "assets/Painted Stork.jpg", // Replace with your image path
+      "description":
+          "Large wading bird with a striking pink tertial feathers and long yellow beak. Often seen wading in shallow water for fish. Produces harsh croaks or whistles during breeding. \n\nLocation: Wetlands, marshes, and shallow water bodies across the Indian subcontinent and Southeast Asia.",
+    },
+
   ];
 }
 
@@ -466,7 +469,7 @@ class AppDrawer extends StatelessWidget {
             }, // Set index for Classify
           ),
           ListTile(
-            leading: Icon(Icons.list, color: Colors.green),
+            leading: Icon(Icons.flutter_dash, color: Colors.green),
             title: Text(
               'Birds',
               style: TextStyle(
@@ -510,7 +513,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   String? s3ImageUrl;
   bool isBird = false;
   bool isLoading = false;
-
+  
   // Upload image to the server
   Future<void> uploadImage(File imageFile) async {
     setState(() => isLoading = true); // Setting loading to true
@@ -642,6 +645,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
         centerTitle: true,
       ),
       body: Stack(
+        
         children: [
           Opacity(
             opacity: 0.7, // Adjust this value for transparency
@@ -674,6 +678,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                   crossAxisAlignment:
                       CrossAxisAlignment.center, // Center horizontally
                   children: [
+                    
                     if (isLoading)
                       Center(
                         child: Lottie.asset(
@@ -827,7 +832,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                             child: Image.network(s3ImageUrl!),
                           ),
                         ),
-                      if (s3ImageUrl != null)
+                      if (s3ImageUrl != null&&!detectedSpecies!.contains(','))
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white54,
