@@ -45,7 +45,8 @@
 
 ### **Home Screen**  
 
-![image](https://github.com/user-attachments/assets/aa1237ac-bcd0-47e3-86ad-ff0022bbfd4f).  ![image](https://github.com/user-attachments/assets/b4f36f58-2813-4183-aed5-2da15af6cfd5)    ![image](https://github.com/user-attachments/assets/36aed81d-cd40-467b-b26a-1ec957f1d974)  
+![image](https://github.com/user-attachments/assets/aa1237ac-bcd0-47e3-86ad-ff0022bbfd4f).  ![image](https://github.com/user-attachments/assets/3d414826-4e24-40e1-ad92-dbf85cdc0357)
+    ![image](https://github.com/user-attachments/assets/36aed81d-cd40-467b-b26a-1ec957f1d974)  
 
 
 
