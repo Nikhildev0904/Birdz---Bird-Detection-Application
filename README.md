@@ -37,13 +37,23 @@
 
 ---
 
+### Flow Chart
+![image](https://github.com/user-attachments/assets/ec661e0c-a7b6-4439-b78c-cf4b51f3fd91)
+
+
 ## 📸 Screenshots  
 
 ### **Home Screen**  
 
+![image](https://github.com/user-attachments/assets/aa1237ac-bcd0-47e3-86ad-ff0022bbfd4f).  ![image](https://github.com/user-attachments/assets/b4f36f58-2813-4183-aed5-2da15af6cfd5)    ![image](https://github.com/user-attachments/assets/36aed81d-cd40-467b-b26a-1ec957f1d974)  
 
-### **Bird Details Screen**  
 
+
+
+### **Validation && Classification Screen**
+
+![image](https://github.com/user-attachments/assets/2c9a4d62-6857-496c-a707-c2cee2941653)
+![image](https://github.com/user-attachments/assets/eac41a0d-4667-417d-81a2-07966c753c60)
 
 ---
 
