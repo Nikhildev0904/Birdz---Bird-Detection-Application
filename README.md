@@ -37,7 +37,7 @@
 
 ---
 
-### Flow Chart
+### Architecture
 ![image](https://github.com/user-attachments/assets/ec661e0c-a7b6-4439-b78c-cf4b51f3fd91)
 
 
