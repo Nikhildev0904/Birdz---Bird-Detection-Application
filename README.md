@@ -21,7 +21,7 @@
 
 ### **Machine Learning**  
 - **ResNet**: For accurate bird species classification.  
-- **YOLOv11**: For bird detection and localization in images.  
+- **YOLOv8**: For bird detection and localization in images.  
 
 ### **Dataset**  
 - **Size**: 6952 images of Indian bird species.  
@@ -31,7 +31,7 @@
 
 ## 🧭 How It Works  
 1. **Upload an image of a bird.**  
-2. The app detects if a bird is present using **YOLOv11**.  
+2. The app detects if a bird is present using **YOLOv8**.  
 3. If detected, **EfficientNetB7** classifies the bird species.  
 4. View detailed information, including habitat, behavior, and images of the bird.  
 
