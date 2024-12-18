@@ -5,7 +5,7 @@
 
 ## ✨ Features  
 - 🐦 **Bird Classification**: Identifies bird species using a ResNet-based classification model with 93% accuracy.  
-- 🎯 **Bird Detection**: Detects birds in images using YOLOv11 for precise localization.  
+- 🎯 **Bird Detection**: Detects birds in images using YOLOv8 for precise localization.  
 - 📱 **User-Friendly Interface**: Intuitive UI with a carousel slider, search functionality, and detailed bird profiles.  
 - 📂 **Contribute to Dataset**: Allows users to upload bird images to expand the dataset and improve the classification model.  
 
