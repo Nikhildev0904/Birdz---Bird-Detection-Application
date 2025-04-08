@@ -30,16 +30,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.4
+  http: 1.3.0
   image_picker: ^0.8.4+3
   url_launcher: ^6.0.10
-  
+  flutter_map: ^6.1.0  # For Leaflet map
+  geolocator: ^10.1.0  # For retrieving user location
+  permission_handler: ^11.0.0  # For location permissions
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   carousel_slider: ^5.0.0
   lottie: ^2.2.0
+  csv: ^6.0.0
 
 dev_dependencies:
   flutter_test:

@@ -9,6 +9,8 @@ import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
+import 'BirdWatchExplorer/BirdWatchExplorer.dart';
+
 void main() {
   runApp(const BirdApp());
 }
@@ -74,9 +76,6 @@ class _SplashWrapperState extends State<SplashWrapper> {
   }
 }
 
-
-
-
 class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -92,7 +91,6 @@ class SplashScreen extends StatelessWidget {
                 'assets/animations/splash.json', // Replace with your Lottie animation file path
                 width: 400, // Adjust size as needed
               ),
-                            
             ],
           ),
         ),
@@ -100,8 +98,6 @@ class SplashScreen extends StatelessWidget {
     );
   }
 }
-
-
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -273,12 +269,10 @@ class BirdRepository {
     },
     {
       "name": "Painted Stork",
-      "image":
-          "assets/Painted Stork.jpg", // Replace with your image path
+      "image": "assets/Painted Stork.jpg", // Replace with your image path
       "description":
           "Large wading bird with a striking pink tertial feathers and long yellow beak. Often seen wading in shallow water for fish. Produces harsh croaks or whistles during breeding. \n\nLocation: Wetlands, marshes, and shallow water bodies across the Indian subcontinent and Southeast Asia.",
     },
-
   ];
 }
 
@@ -346,7 +340,28 @@ class HomeContent extends StatelessWidget {
                     style: TextStyle(color: Colors.black, fontSize: 23),
                   ),
                 ),
-                SizedBox(height: 25),
+                SizedBox(
+                  height: 5,
+                ),
+                ElevatedButton.icon(
+                    icon: Icon(Icons.explore, size: 28),
+                    label: Text("Explore Bird Sightings",
+                        style: TextStyle(fontSize: 20)),
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => BirdWatchExplorer()),
+                      );
+                    }),
+                SizedBox(height: 15), //25
                 Lottie.asset(
                   'assets/animations/b4.json',
                   height: 100,
@@ -428,7 +443,7 @@ class AppDrawer extends StatelessWidget {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-               colors: [Color(0xFFB8FFA9), Colors.black],
+                colors: [Color(0xFFB8FFA9), Colors.black],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -513,7 +528,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   String? s3ImageUrl;
   bool isBird = false;
   bool isLoading = false;
-  
+
   // Upload image to the server
   Future<void> uploadImage(File imageFile) async {
     setState(() => isLoading = true); // Setting loading to true
@@ -645,7 +660,6 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
         centerTitle: true,
       ),
       body: Stack(
-        
         children: [
           Opacity(
             opacity: 0.7, // Adjust this value for transparency
@@ -678,7 +692,6 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                   crossAxisAlignment:
                       CrossAxisAlignment.center, // Center horizontally
                   children: [
-                    
                     if (isLoading)
                       Center(
                         child: Lottie.asset(
@@ -832,7 +845,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                             child: Image.network(s3ImageUrl!),
                           ),
                         ),
-                      if (s3ImageUrl != null&&!detectedSpecies!.contains(','))
+                      if (s3ImageUrl != null && !detectedSpecies!.contains(','))
                         ElevatedButton.icon(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white54,
@@ -1048,35 +1061,34 @@ class _BirdSearchScreenState extends State<BirdsScreen> {
     );
   }
 
-
   void _openContributionForm(BuildContext context) {
-  const String contributionFormURL =
-      "https://docs.google.com/forms/d/e/1FAIpQLSfgGsN4-3qfel3qVOFbP4H1myzr84XCKrcSMd84bG2SLWVxOA/viewform?usp=sf_link"; // Replace with your form link
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text("Contribute to our Dataset"),
-      content: Text(
-          "Help us grow the dataset by adding information about new birds."),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text("Cancel"),
-        ),
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            // Open the contribution form in a browser
-            launch(contributionFormURL);
-          },
-          child: Text("Contribute"),
-        ),
-      ],
-    ),
-  );
-}
+    const String contributionFormURL =
+        "https://docs.google.com/forms/d/e/1FAIpQLSfgGsN4-3qfel3qVOFbP4H1myzr84XCKrcSMd84bG2SLWVxOA/viewform?usp=sf_link"; // Replace with your form link
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Contribute to our Dataset"),
+        content: Text(
+            "Help us grow the dataset by adding information about new birds."),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Open the contribution form in a browser
+              launch(contributionFormURL);
+            },
+            child: Text("Contribute"),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class BirdDetailScreen extends StatelessWidget {
