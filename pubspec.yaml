@@ -44,6 +44,7 @@ dependencies:
   carousel_slider: ^5.0.0
   lottie: ^2.2.0
   csv: ^6.0.0
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
