@@ -36,6 +36,7 @@ dependencies:
   flutter_map: ^6.1.0  # For Leaflet map
   geolocator: ^10.1.0  # For retrieving user location
   permission_handler: ^11.0.0  # For location permissions
+  google_maps_flutter: ^2.2.0
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:csv/csv.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
+import 'package:lottie/lottie.dart';
 
 class BirdHotspot {
   final String id;
@@ -37,16 +38,19 @@ class BirdWatchExplorer extends StatefulWidget {
 }
 
 class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
+  GoogleMapController? _googleMapController;
+  Set<Circle> _circles = {};
+  Set<gmaps.Marker> _markers = {};
   Position? _currentPosition;
   List<dynamic> _recentSightings = [];
   List<BirdHotspot> _birdHotspots = [];
   double _searchRadius = 10.0;
-  MapController _mapController = MapController();
   double? customLat;
   double? customLong;
   bool _useCustomLocation = false;
   TextEditingController _locationController = TextEditingController();
   bool _isLoading = false;
+  double _selectedRadius = 10.0;
 
   @override
   void initState() {
@@ -175,9 +179,11 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
 
       if (mounted) {
         Future.delayed(Duration(milliseconds: 500), () {
-          _mapController.move(
-            LatLng(position.latitude, position.longitude),
-            15.0,
+          _googleMapController?.animateCamera(
+            CameraUpdate.newLatLngZoom(
+              LatLng(position.latitude, position.longitude),
+              15.0,
+            ),
           );
         });
       }
@@ -218,48 +224,34 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
     return hotspots;
   }
 
-  double _selectedRadius = 10.0;
-
-  Future<void> _fetchBirdData() async {
-    setState(() => _isLoading = true);
-    
+  void _updateMap() {
     double latitude = _useCustomLocation ? customLat ?? 0 : (_currentPosition?.latitude ?? 0);
     double longitude = _useCustomLocation ? customLong ?? 0 : (_currentPosition?.longitude ?? 0);
 
-    String apiKey = "lv9ldei00jf0";
+    setState(() {
+      _markers = {
+        gmaps.Marker(
+          markerId: gmaps.MarkerId("current_location"),
+          position: gmaps.LatLng(latitude, longitude),
+          icon: gmaps.BitmapDescriptor.defaultMarkerWithHue(gmaps.BitmapDescriptor.hueRed),
+        ),
+      };
 
-    String sightingsUrl = "https://api.ebird.org/v2/data/obs/geo/recent?lat=$latitude&lng=$longitude&dist=${_selectedRadius}";
-    String hotspotsUrl = "https://api.ebird.org/v2/ref/hotspot/geo?lat=$latitude&lng=$longitude&dist=${_selectedRadius}";
+      _circles = {
+        Circle(
+          circleId: CircleId("search_radius"),
+          center: LatLng(latitude, longitude),
+          radius: _selectedRadius * 1000, // Convert km to meters
+          fillColor: Colors.green.withOpacity(0.3),
+          strokeColor: Colors.green,
+          strokeWidth: 2,
+        ),
+      };
+    });
 
-    try {
-      final sightingsResponse = await http.get(Uri.parse(sightingsUrl), headers: {'X-eBirdApiToken': apiKey});
-      final hotspotsResponse = await http.get(Uri.parse(hotspotsUrl), headers: {'X-eBirdApiToken': apiKey});
-
-      if (sightingsResponse.statusCode == 200) {
-        setState(() {
-          _recentSightings = json.decode(sightingsResponse.body);
-        });
-      }
-
-      if (hotspotsResponse.statusCode == 200) {
-        List<BirdHotspot> hotspots = parseCsvResponse(hotspotsResponse.body);
-        setState(() {
-          _birdHotspots = hotspots;
-        });
-      }
-
-      _mapController.move(
-        LatLng(latitude, longitude),
-        15.0,
-      );
-
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error fetching bird data"), backgroundColor: Colors.red),
-      );
-    } finally {
-      setState(() => _isLoading = false);
-    }
+    _googleMapController?.animateCamera(
+      CameraUpdate.newLatLngZoom(LatLng(latitude, longitude), 12),
+    );
   }
 
   @override
@@ -277,69 +269,34 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                 title: Text("BirdWatch Explorer", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                 background: Stack(
                   children: [
-                    FlutterMap(
-                      mapController: _mapController,
-                      options: MapOptions(
-                        initialCenter: _useCustomLocation
-                            ? LatLng(customLat??0, customLong??0)
-                            : _currentPosition != null
-                                ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                                : LatLng(20.5937, 78.9629),
-                        initialZoom: 12,
+                    GoogleMap(
+                      onMapCreated: (controller) => _googleMapController = controller,
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(
+                          _useCustomLocation
+                              ? customLat ?? 20.5937
+                              : _currentPosition?.latitude ?? 20.5937,
+                          _useCustomLocation
+                              ? customLong ?? 78.9629
+                              : _currentPosition?.longitude ?? 78.9629,
+                        ),
+                        zoom: 12,
                       ),
-                      children: [
-                        TileLayer(
-                          urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                          subdomains: ['a', 'b', 'c'],
-                          userAgentPackageName: 'com.example.birdz',
-                        ),
-                        CircleLayer(
-                          circles: [
-                            CircleMarker(
-                              point: _useCustomLocation
-                                  ? LatLng(customLat ?? 0, customLong ?? 0)
-                                  : _currentPosition != null
-                                      ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                                      : LatLng(0, 0),
-                              color: Colors.green.withOpacity(0.3),
-                              borderStrokeWidth: 2,
-                              borderColor: Colors.green,
-                              radius: _selectedRadius * 1000, // Convert km to meters
-                            ),
-                          ],
-                        ),
-                        if (_useCustomLocation)
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                width: 50,
-                                height: 50,
-                                point: LatLng(customLat ?? 0, customLong ?? 0),
-                                child: Icon(Icons.location_pin, color: Colors.blue, size: 40),
-                              ),
-                            ],
-                          )
-                        else if (_currentPosition != null)
-                          MarkerLayer(
-                            markers: [
-                              Marker(
-                                width: 50,
-                                height: 50,
-                                point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                                child: Icon(Icons.location_pin, color: Colors.red, size: 40),
-                              ),
-                            ],
-                          ),
-                      ],
+                      markers: _markers,
+                      circles: _circles,
+                      zoomGesturesEnabled: true,
+                      zoomControlsEnabled: true,
+                      myLocationEnabled: true, // Enable "My Location" marker
+                      myLocationButtonEnabled: false, // Remove default "My Location" button
+                      onCameraMove: (position) {
+                        // Optionally handle camera movement
+                      },
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.black.withOpacity(0.3), Colors.transparent],
-                        ),
-                      ),
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      right: 16,
+                      child: _buildSearchBar(), // Ensure the search bar is not blended with the map
                     ),
                   ],
                 ),
@@ -348,10 +305,16 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
           ];
         },
         body: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Colors.green))
+            ? Center(
+                child: Lottie.asset(
+                  'assets/animations/loading.json', // Path to the animation file
+                  width: 150,
+                  height: 150,
+                  fit: BoxFit.contain,
+                ),
+              )
             : Column(
                 children: [
-                  _buildSearchBar(),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
@@ -370,14 +333,19 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                                 onChanged: (double value) {
                                   setState(() {
                                     _selectedRadius = value;
-                                    // Trigger map update to reflect the new radius
-                                    _mapController.move(
-                                      _useCustomLocation
-                                          ? LatLng(customLat ?? 0, customLong ?? 0)
-                                          : _currentPosition != null
-                                              ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                                              : LatLng(0, 0),
-                                      _mapController.zoom,
+                                    _updateMap(); // Update map dynamically
+                                    _googleMapController?.animateCamera(
+                                      CameraUpdate.newLatLngZoom(
+                                        LatLng(
+                                          _useCustomLocation
+                                              ? customLat ?? 20.5937
+                                              : _currentPosition?.latitude ?? 20.5937,
+                                          _useCustomLocation
+                                              ? customLong ?? 78.9629
+                                              : _currentPosition?.longitude ?? 78.9629,
+                                        ),
+                                        12, // Keep the zoom level consistent
+                                      ),
                                     );
                                   });
                                 },
@@ -455,6 +423,44 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
               ),
       ),
     );
+  }
+
+  Future<void> _fetchBirdData() async {
+    setState(() => _isLoading = true);
+    double latitude = _useCustomLocation ? customLat ?? 0 : (_currentPosition?.latitude ?? 0);
+    double longitude = _useCustomLocation ? customLong ?? 0 : (_currentPosition?.longitude ?? 0);
+
+    String apiKey = "lv9ldei00jf0";
+
+    String sightingsUrl = "https://api.ebird.org/v2/data/obs/geo/recent?lat=$latitude&lng=$longitude&dist=${_selectedRadius}";
+    String hotspotsUrl = "https://api.ebird.org/v2/ref/hotspot/geo?lat=$latitude&lng=$longitude&dist=${_selectedRadius}";
+
+    try {
+      final sightingsResponse = await http.get(Uri.parse(sightingsUrl), headers: {'X-eBirdApiToken': apiKey});
+      final hotspotsResponse = await http.get(Uri.parse(hotspotsUrl), headers: {'X-eBirdApiToken': apiKey});
+
+      if (sightingsResponse.statusCode == 200) {
+        setState(() {
+          _recentSightings = json.decode(sightingsResponse.body);
+        });
+      }
+
+      if (hotspotsResponse.statusCode == 200) {
+        List<BirdHotspot> hotspots = parseCsvResponse(hotspotsResponse.body);
+        setState(() {
+          _birdHotspots = hotspots;
+        });
+      }
+
+      _updateMap();
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error fetching bird data"), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   Widget _buildSightingsList() {
