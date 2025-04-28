@@ -66,27 +66,34 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
       margin: EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(25), // Rounded corners
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 4),
+            blurRadius: 8,
+            offset: Offset(0, 2), // Subtle shadow
           )
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           children: [
             Expanded(
               child: TextField(
                 controller: _locationController,
+                style: TextStyle(fontSize: 16),
                 decoration: InputDecoration(
                   hintText: "Search for a location...",
+                  hintStyle: TextStyle(color: Colors.grey[500]),
                   border: InputBorder.none,
                   prefixIcon: Icon(Icons.search, color: Colors.green[700]),
                 ),
+                onSubmitted: (value) {
+                  if (value.isNotEmpty) {
+                    _searchLocation();
+                  }
+                },
               ),
             ),
             IconButton(
@@ -96,10 +103,6 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                 _useCustomLocation = false;
                 _getCurrentLocation().then((_) => _fetchBirdData());
               },
-            ),
-            IconButton(
-              icon: Icon(Icons.search, color: Colors.green[700]),
-              onPressed: _searchLocation,
             ),
           ],
         ),
@@ -266,11 +269,20 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
               floating: false,
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
-                title: Text("BirdWatch Explorer", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                title: Text(
+                  "BirdWatch Explorer",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
                 background: Stack(
                   children: [
                     GoogleMap(
-                      onMapCreated: (controller) => _googleMapController = controller,
+                      onMapCreated: (controller) {
+                        _googleMapController = controller; // Assign the controller
+                      },
                       initialCameraPosition: CameraPosition(
                         target: LatLng(
                           _useCustomLocation
@@ -280,23 +292,17 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                               ? customLong ?? 78.9629
                               : _currentPosition?.longitude ?? 78.9629,
                         ),
-                        zoom: 12,
+                        zoom: 12, // Set initial zoom level
                       ),
                       markers: _markers,
                       circles: _circles,
-                      zoomGesturesEnabled: true,
-                      zoomControlsEnabled: true,
+                      zoomGesturesEnabled: true, // Enable pinch-to-zoom gestures
+                      zoomControlsEnabled: true, // Display zoom in/out buttons
                       myLocationEnabled: true, // Enable "My Location" marker
                       myLocationButtonEnabled: false, // Remove default "My Location" button
                       onCameraMove: (position) {
                         // Optionally handle camera movement
                       },
-                    ),
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      right: 16,
-                      child: _buildSearchBar(), // Ensure the search bar is not blended with the map
                     ),
                   ],
                 ),
@@ -307,7 +313,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
         body: _isLoading
             ? Center(
                 child: Lottie.asset(
-                  'assets/animations/loading.json', // Path to the animation file
+                  'assets/animations/loading.json', // Loading animation
                   width: 150,
                   height: 150,
                   fit: BoxFit.contain,
@@ -315,13 +321,17 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
               )
             : Column(
                 children: [
+                  _buildSearchBar(),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
                       children: [
                         Row(
                           children: [
-                            Text("Search Radius: ", style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              "Search Radius:",
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
                             Expanded(
                               child: Slider(
                                 value: _selectedRadius,
@@ -333,7 +343,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                                 onChanged: (double value) {
                                   setState(() {
                                     _selectedRadius = value;
-                                    _updateMap(); // Update map dynamically
+                                    _updateMap();
                                     _googleMapController?.animateCamera(
                                       CameraUpdate.newLatLngZoom(
                                         LatLng(
@@ -344,7 +354,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                                               ? customLong ?? 78.9629
                                               : _currentPosition?.longitude ?? 78.9629,
                                         ),
-                                        12, // Keep the zoom level consistent
+                                        12,
                                       ),
                                     );
                                   });
@@ -354,12 +364,17 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.green[50],
+                                color: Colors.green[100],
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.green[200]!),
+                                border: Border.all(color: Colors.green[300]!),
                               ),
-                              child: Text("${_selectedRadius.toStringAsFixed(0)} km",
-                                  style: TextStyle(color: Colors.green[800], fontWeight: FontWeight.bold)),
+                              child: Text(
+                                "${_selectedRadius.toStringAsFixed(0)} km",
+                                style: TextStyle(
+                                  color: Colors.green[800],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -374,7 +389,14 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                             padding: EdgeInsets.symmetric(vertical: 16),
                             minimumSize: Size(double.infinity, 0),
                           ),
-                          child: Text("SEARCH BIRDS", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          child: Text(
+                            "SEARCH BIRDS",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                         SizedBox(height: 8),
                       ],
@@ -389,6 +411,13 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 4,
+                                  offset: Offset(0, -2),
+                                ),
+                              ],
                             ),
                             child: TabBar(
                               indicator: UnderlineTabIndicator(
