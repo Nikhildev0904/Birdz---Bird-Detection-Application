@@ -27,6 +27,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   List<String> selectedImages = []; // After user selects multiple
   String? birdDescription;
   Map<String, dynamic>? probabilities; // Store probabilities
+  String? initialPrediction; // Store initial prediction bird species
+  String? finalPredictionImage; // Store final predicted bird image path
 
   bool showConfirmButton = false;
 
@@ -80,83 +82,99 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   }
 
   // Classify the bird species
- Future<void> classifyBird() async {
-  if (!isBird) {
-    setState(() {
-      resultMessage = 'No bird detected; classification skipped.';
-    });
-    return;
-  }
+  Future<void> classifyBird() async {
+    if (!isBird) {
+      setState(() {
+        resultMessage = 'No bird detected; classification skipped.';
+      });
+      return;
+    }
 
-  if (imageUrl == null) {
-    setState(() {
-      resultMessage = 'Image URL is missing. Please upload an image first.';
-    });
-    return;
-  }
+    if (imageUrl == null) {
+      setState(() {
+        resultMessage = 'Image URL is missing. Please upload an image first.';
+      });
+      return;
+    }
 
-  setState(() => isLoading = true);
+    setState(() => isLoading = true);
 
-  try {
-    final response = await http.post(
-      Uri.parse('https://mytownly.in/get-probabilities/'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"birdLink": imageUrl}),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('https://mytownly.in/get-probabilities/'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"birdLink": imageUrl}),
+      );
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> envelope = json.decode(response.body);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> envelope = json.decode(response.body);
 
-      // Extract the "data" object
-      final Map<String, dynamic>? data = envelope['data'] as Map<String, dynamic>?;
+        // Extract the "data" object
+        final Map<String, dynamic>? data = envelope['data'] as Map<String, dynamic>?;
 
-      if (data != null) {
-        // Extract probabilities and images
-        final List<dynamic>? imgsDynamic = data['images'] as List<dynamic>?;
-        final Map<String, dynamic>? probabilitiesData = {
-          "classIndex": data['classIndex'],
-          "className": data['className'],
-          "topPrediction1_class": data['topPrediction1_class'],
-          "topPrediction2_class": data['topPrediction2_class'],
-          "topPrediction1_probability": data['topPrediction1_probability'],
-          "topPrediction2_probability": data['topPrediction2_probability'],
-        };
+        if (data != null) {
+          // Extract probabilities and images
+          final List<dynamic>? imgsDynamic = data['images'] as List<dynamic>?;
+          final Map<String, dynamic>? probabilitiesData = {
+            "classIndex": data['classIndex'],
+            "className": data['className'],
+            "topPrediction1_class": data['topPrediction1_class'],
+            "topPrediction2_class": data['topPrediction2_class'],
+            "topPrediction1_probability": data['topPrediction1_probability'],
+            "topPrediction2_probability": data['topPrediction2_probability'],
+          };
 
-        if (imgsDynamic != null && imgsDynamic.isNotEmpty && probabilitiesData != null) {
-          setState(() {
-            predictionImages = imgsDynamic
-                .cast<String>()
-                .map((url) => url.replaceAll(RegExp(r'\.JPG$'), '.jpg'))
-                .toList();
-            probabilities = probabilitiesData; // Store probabilities in state
-            selectedImages.clear();
-            resultMessage = null;
-          });
+          if (imgsDynamic != null && imgsDynamic.isNotEmpty && probabilitiesData != null) {
+            setState(() {
+              // Log the original URLs for debugging
+              print("Original image URLs: $imgsDynamic");
+
+              predictionImages = imgsDynamic
+                  .cast<String>()
+                  .map((url) {
+                    // Transform all URLs to use the .JPG extension
+                    final normalizedUrl = url.replaceAllMapped(
+                      RegExp(r'\.jpg$', caseSensitive: false),
+                      (match) => '.JPG',
+                    );
+                    print("Normalized URL: $normalizedUrl"); // Log the normalized URL
+                    return normalizedUrl;
+                  })
+                  .toList();
+
+              // Log the final list of prediction images
+              print("Final prediction images: $predictionImages");
+
+              probabilities = probabilitiesData; // Store probabilities in state
+              initialPrediction = probabilitiesData['topPrediction1_class']; // Store initial prediction
+              selectedImages.clear();
+              resultMessage = null;
+            });
+          } else {
+            setState(() {
+              predictionImages = [];
+              probabilities = null;
+              resultMessage = 'No prediction images or probabilities returned.';
+            });
+          }
         } else {
           setState(() {
-            predictionImages = [];
-            probabilities = null;
-            resultMessage = 'No prediction images or probabilities returned.';
+            resultMessage = 'Malformed response: missing "data" field.';
           });
         }
       } else {
         setState(() {
-          resultMessage = 'Malformed response: missing "data" field.';
+          resultMessage = 'Classification failed! (${response.statusCode})';
         });
       }
-    } else {
+    } catch (e) {
       setState(() {
-        resultMessage = 'Classification failed! (${response.statusCode})';
+        resultMessage = 'An error occurred: $e';
       });
+    } finally {
+      setState(() => isLoading = false);
     }
-  } catch (e) {
-    setState(() {
-      resultMessage = 'An error occurred: $e';
-    });
-  } finally {
-    setState(() => isLoading = false);
   }
-}
 
   // Pick an image from gallery
   Future<void> pickImage() async {
@@ -200,95 +218,98 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   }
 
   Future<void> sendSelectedImagesForFinalClassification() async {
-  if (selectedImages.length != 3) {
-    setState(() {
-      resultMessage = 'Please select exactly 3 images.';
-    });
-    return;
-  }
-
-  if (probabilities == null) {
-    setState(() {
-      resultMessage = 'Probabilities data is missing.';
-    });
-    return;
-  }
-
-  setState(() => isLoading = true);
-
-  try {
-    // Extract class counts from selected images
-    final classCounts = <String, int>{};
-    for (var url in selectedImages) {
-      final className = url.contains('/${probabilities!['classIndex']}_')
-          ? probabilities!['className']
-          : probabilities!['topPrediction2_class'];
-      classCounts[className] = (classCounts[className] ?? 0) + 1;
-    }
-
-    // Ensure the class names are available
-    final class1Name = probabilities!['className'];
-    final class2Name = probabilities!['topPrediction2_class'];
-
-    if (class1Name == null || class2Name == null) {
+    if (selectedImages.length != 3) {
       setState(() {
-        resultMessage = 'Unable to determine class names.';
+        resultMessage = 'Please select exactly 3 images.';
       });
       return;
     }
 
-    // Prepare the payload for the API
-    final payload = {
-      "birdLink": imageUrl, // URL of the uploaded bird image
-      "selected_class1_name": class1Name,
-      "selected_class2_name": class2Name,
-      "selected_class1_value": classCounts[class1Name] ?? 0,
-      "selected_class2_value": classCounts[class2Name] ?? 0,
-    };
+    if (probabilities == null) {
+      setState(() {
+        resultMessage = 'Probabilities data is missing.';
+      });
+      return;
+    }
 
-    final response = await http.post(
-      Uri.parse('https://mytownly.in/get-adjusted-predictions/'),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(payload),
-    );
+    setState(() => isLoading = true);
+    try {
+      // Extract class counts from selected images
+      final classCounts = <String, int>{};
+      for (var url in selectedImages) {
+        final className = url.contains('/${probabilities!['classIndex']}_')
+            ? probabilities!['className']
+            : probabilities!['topPrediction2_class'];
+        classCounts[className] = (classCounts[className] ?? 0) + 1;
+      }
 
-    print(response.body); // Debugging line to check the response
+      // Ensure the class names are available
+      final class1Name = probabilities!['className'];
+      final class2Name = probabilities!['topPrediction2_class'];
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> envelope = json.decode(response.body);
-
-      // Extract the "data" object
-      final Map<String, dynamic>? data = envelope['data'] as Map<String, dynamic>?;
-
-      if (data != null && data['final_prediction'] != null) {
-        final finalPrediction = data['final_prediction'];
-
+      if (class1Name == null || class2Name == null) {
         setState(() {
-          detectedSpecies = finalPrediction['class'] ?? 'Unknown';
-          resultMessage = null;
+          resultMessage = 'Unable to determine class names.';
         });
+        return;
+      }
+
+      // Prepare the payload for the API
+      final payload = {
+        "birdLink": imageUrl, // URL of the uploaded bird image
+        "selected_class1_name": class1Name,
+        "selected_class2_name": class2Name,
+        "selected_class1_value": classCounts[class1Name] ?? 0,
+        "selected_class2_value": classCounts[class2Name] ?? 0,
+      };
+
+      final response = await http.post(
+        Uri.parse('https://mytownly.in/get-adjusted-predictions/'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> envelope = json.decode(response.body);
+
+        // Extract the "data" object
+        final Map<String, dynamic>? data = envelope['data'] as Map<String, dynamic>?;
+
+        if (data != null && data['final_prediction'] != null) {
+          final finalPrediction = data['final_prediction'];
+
+          setState(() {
+            detectedSpecies = finalPrediction['class'] ?? 'Unknown';
+            final birdData = BirdRepository.birdData.firstWhere(
+              (bird) => bird["name"]!.toLowerCase() == detectedSpecies!.toLowerCase(),
+              orElse: () => {
+                "image": "assets/placeholder.jpg", // Use a placeholder image if not found
+              },
+            );
+
+            setState(() {
+              finalPredictionImage = birdData["image"]; // Set final prediction image from birdData
+              resultMessage = null;
+            });
+          });
+        } else {
+          setState(() {
+            resultMessage = 'Malformed response: missing "data" field.';
+          });
+        }
       } else {
         setState(() {
-          resultMessage = 'Unexpected response format from the server.';
+          resultMessage = 'Final classification failed! (${response.statusCode})';
         });
       }
-    } else {
+    } catch (e) {
       setState(() {
-        resultMessage = 'Final classification failed! (${response.statusCode})';
+        resultMessage = 'An error occurred: $e';
       });
+    } finally {
+      setState(() => isLoading = false);
     }
-  } catch (e) {
-    setState(() {
-      resultMessage = 'An error occurred: $e';
-    });
-  } finally {
-    setState(() {
-      isLoading = false;
-      selectedImages.clear();
-      showConfirmButton = false;
-    });
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -480,11 +501,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                                   width: isSelected ? 3 : 1),
                                               borderRadius:
                                                   BorderRadius.circular(8),
-                                              image: DecorationImage(
-                                                image: NetworkImage(url),
-                                                fit: BoxFit.cover,
-                                              ),
                                             ),
+                                            child: buildImage(url),
                                           ),
                                           if (isSelected)
                                             Positioned(
@@ -532,23 +550,47 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                           ),
                         ),
                       SizedBox(height: 8),
-                      if (detectedSpecies != null)
-                        Container(
-                          padding: EdgeInsets.all(8.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(
-                                0.8), // Semi-transparent background
-                            borderRadius:
-                                BorderRadius.circular(10), // Rounded corners
-                          ),
-                          child: Text(
-                            'Detected Species: $detectedSpecies',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                            textAlign: TextAlign.center,
+                      if (initialPrediction != null || detectedSpecies != null)
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            children: [
+                              if (initialPrediction != null)
+                                Text(
+                                  'Initial Prediction: $initialPrediction',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              if (detectedSpecies != null)
+                                Column(
+                                  children: [
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'Final Prediction: $detectedSpecies',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    if (finalPredictionImage != null)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 16.0),
+                                        child: Image.asset(
+                                          finalPredictionImage!,
+                                          height: 200,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                            ],
                           ),
                         ),
                       if (s3ImageUrl != null)
@@ -616,5 +658,65 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
         ],
       ),
     );
+  }
+
+  // Add error handling for image loading with fallback for .jpg and .JPG
+  Widget buildImage(String url) {
+    return FutureBuilder<String>(
+      future: resolveImageUrl(url),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError || !snapshot.hasData) {
+          print("Failed to load image: $url"); // Log inaccessible URLs
+          return Container(
+            color: Colors.grey,
+            child: Icon(Icons.broken_image, color: Colors.red),
+          );
+        } else {
+          return Image.network(
+            snapshot.data!,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              print("Failed to load resolved image: ${snapshot.data!}");
+              return Container(
+                color: Colors.grey,
+                child: Icon(Icons.broken_image, color: Colors.red),
+              );
+            },
+          );
+        }
+      },
+    );
+  }
+
+  // Resolve the correct image URL by trying both .JPG and .jpg
+  Future<String> resolveImageUrl(String url) async {
+    try {
+      // Try loading the image with .JPG
+      final jpgUrl = url.replaceAllMapped(
+        RegExp(r'\.jpg$', caseSensitive: false),
+        (match) => '.JPG',
+      );
+      final response = await http.head(Uri.parse(jpgUrl));
+      if (response.statusCode == 200) {
+        return jpgUrl;
+      }
+
+      // Fallback to .jpg if .JPG fails
+      final lowercaseUrl = url.replaceAllMapped(
+        RegExp(r'\.JPG$', caseSensitive: false),
+        (match) => '.jpg',
+      );
+      final fallbackResponse = await http.head(Uri.parse(lowercaseUrl));
+      if (fallbackResponse.statusCode == 200) {
+        return lowercaseUrl;
+      }
+
+      throw Exception("Both .JPG and .jpg failed for $url");
+    } catch (e) {
+      print("Error resolving image URL: $e");
+      throw e;
+    }
   }
 }
