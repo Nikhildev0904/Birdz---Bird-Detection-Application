@@ -43,6 +43,7 @@ class BirdDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.green[50],
+      resizeToAvoidBottomInset: true, // Prevent overflow when keyboard pops up
       appBar: AppBar(
         backgroundColor: Colors.green[100],
         elevation: 0,
@@ -53,88 +54,90 @@ class BirdDetailScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Bird Image
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: Image.asset(
-                    birdImage,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              // Description and Extracted Location
-              Card(
-                elevation: 5,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        cleanDescription,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          height: 1.5,
-                        ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Bird Image
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 10,
+                        offset: Offset(0, 5),
                       ),
-                      SizedBox(height: 10),
-                      if (location.isNotEmpty &&
-                          location != "Location not available")
-                        Text(
-                          location,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.green[700],
-                          ),
-                        ),
                     ],
                   ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: Image.asset(
+                      birdImage,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-              // "Know More" Button
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+                SizedBox(height: 20),
+                // Description and Extracted Location
+                Card(
+                  elevation: 5,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                ),
-                onPressed: () => _launchURL('Indian $birdName'),
-                icon: Icon(Icons.info, color: Colors.white),
-                label: Text(
-                  "Know More",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cleanDescription,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            height: 1.5,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        if (location.isNotEmpty &&
+                            location != "Location not available")
+                          Text(
+                            location,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.green[700],
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(height: 20),
+                // "Know More" Button
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  ),
+                  onPressed: () => _launchURL('Indian $birdName'),
+                  icon: Icon(Icons.info, color: Colors.white),
+                  label: Text(
+                    "Know More",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
