@@ -31,22 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: _selectedIndex == 0 // Show AppBar only on Home screen
           ? AppBar(
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFFB8FFA9), Colors.black],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-              ),
+                backgroundColor: Color(0xFF006400),
               title: Row(
                 children: [
-                  Image.asset(
-                    'assets/Birdz.png', // Replace with your icon path
-                    width: 80, // Size of the icon
-                    height: 80,
-                  ),
                   SizedBox(width: 8), // Adds spacing between icon and title
                   Text(
                     'Birdz',

@@ -19,11 +19,13 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Image.asset(
-                'assets/Birdz.png', // Replace with your image path
-                fit: BoxFit.contain,
-                width: 200, // Adjust the size as needed
-                height: 200,
+              child: Text(
+              'Birdz',
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
               ),
             ),
           ),

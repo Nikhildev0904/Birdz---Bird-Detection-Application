@@ -73,7 +73,7 @@ class HomeContent extends StatelessWidget {
                 ),
                 ElevatedButton.icon(
                     icon: Icon(Icons.explore, size: 28),
-                    label: Text("Explore Bird Sightings",
+                    label: Text("Birds near you",
                         style: TextStyle(fontSize: 20)),
                     style: ElevatedButton.styleFrom(
                       padding:
