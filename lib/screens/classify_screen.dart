@@ -29,7 +29,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   Map<String, dynamic>? probabilities; // Store probabilities
   String? initialPrediction; // Store initial prediction bird species
   String? finalPredictionImage; // Store final predicted bird image path
-  
+
   // Cache for resolved image URLs to prevent unnecessary network requests
   Map<String, String> resolvedImageCache = {};
 
@@ -130,7 +130,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
           if (imgsDynamic != null && imgsDynamic.isNotEmpty && probabilitiesData != null) {
             // Clear the cache when we get new prediction images
             resolvedImageCache.clear();
-            
+
             setState(() {
               // Log the original URLs for debugging
               print("Original image URLs: $imgsDynamic");
@@ -138,14 +138,14 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
               predictionImages = imgsDynamic
                   .cast<String>()
                   .map((url) {
-                    // Transform all URLs to use the .JPG extension
-                    final normalizedUrl = url.replaceAllMapped(
-                      RegExp(r'\.jpg$', caseSensitive: false),
+                // Transform all URLs to use the .JPG extension
+                final normalizedUrl = url.replaceAllMapped(
+                  RegExp(r'\.jpg$', caseSensitive: false),
                       (match) => '.JPG',
-                    );
-                    print("Normalized URL: $normalizedUrl"); // Log the normalized URL
-                    return normalizedUrl;
-                  })
+                );
+                print("Normalized URL: $normalizedUrl"); // Log the normalized URL
+                return normalizedUrl;
+              })
                   .toList();
 
               // Log the final list of prediction images
@@ -156,7 +156,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
               selectedImages.clear();
               resultMessage = null;
             });
-            
+
             // Pre-resolve all image URLs in the background
             for (String url in predictionImages) {
               resolveImageUrl(url);
@@ -297,7 +297,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
           setState(() {
             detectedSpecies = finalPrediction['class'] ?? 'Unknown';
             final birdData = BirdRepository.birdData.firstWhere(
-              (bird) => bird["name"]!.toLowerCase() == detectedSpecies!.toLowerCase(),
+                  (bird) => bird["name"]!.toLowerCase() == detectedSpecies!.toLowerCase(),
               orElse: () => {
                 "image": "assets/placeholder.jpg", // Use a placeholder image if not found
               },
@@ -330,35 +330,35 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: const Color.fromARGB(255, 202, 226, 255),
       appBar: AppBar(
-        backgroundColor: Colors.green[100],
+        backgroundColor: const Color.fromARGB(255, 202, 226, 255),
         elevation: 0,
         title: Text(
-          'Bird Species Detection',
-          style: TextStyle(
-            color: Colors.black87, 
-            fontSize: 22, 
-            fontWeight: FontWeight.bold
-          )
+            'Bird Species Detection',
+            style: TextStyle(
+                color: Colors.black87,
+                fontSize: 22,
+                fontWeight: FontWeight.bold
+            )
         ),
         centerTitle: true,
       ),
       body: Stack(
         children: [
           // Background image
-          Opacity(
-            opacity: 0.5, // Increased opacity for better visibility
-            child: Container(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/background_test.png"),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          
+          // Opacity(
+          //   opacity: 0.5, // Increased opacity for better visibility
+          //   child: Container(
+          //     decoration: BoxDecoration(
+          //       image: DecorationImage(
+          //         image: AssetImage("assets/background_test.png"),
+          //         fit: BoxFit.cover,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+
           // Blur effect when showing results
           if (resultMessage != null || detectedSpecies != null)
             BackdropFilter(
@@ -367,7 +367,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                 color: Colors.black.withOpacity(0.1), // Lighter dim effect
               ),
             ),
-            
+
           // Main content
           SafeArea(
             child: Center(
@@ -375,470 +375,516 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Loading animation
-                      if (isLoading)
-                        Center(
-                          child: Card(
-                            elevation: 4,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Lottie.asset(
-                                    'assets/animations/loading.json',
-                                    width: 150,
-                                    height: 150,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Processing...',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Loading animation
+                        if (isLoading)
+                          Center(
+                            child: Card(
+                              elevation: 4,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Lottie.asset(
+                                      'assets/animations/loading.json',
+                                      width: 150,
+                                      height: 150,
+                                      fit: BoxFit.cover,
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        
-                      if (!isLoading) ...[
-                        // Image source buttons
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                spreadRadius: 1,
-                                blurRadius: 5,
-                              ),
-                            ],
-                          ),
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Select Image Source',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  // Gallery Button
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: pickImage,
-                                      icon: Icon(Icons.photo_library),
-                                      label: Text('Gallery'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.teal[100],
-                                        foregroundColor: Colors.black87,
-                                        padding: const EdgeInsets.symmetric(vertical: 12),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
+                                    SizedBox(height: 16),
+                                    Text(
+                                      'Processing...',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(width: 16),
-                                  // Camera Button
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: captureImage,
-                                      icon: Icon(Icons.camera_alt),
-                                      label: Text('Camera'),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.teal[100],
-                                        foregroundColor: Colors.black87,
-                                        padding: EdgeInsets.symmetric(vertical: 12),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        SizedBox(height: 20),
-                        
-                        // Uploaded image section
-                        if (imageUrl != null)
-                          Card(
-                            elevation: 5,
-                            shadowColor: Colors.black26,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Uploaded Image",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.teal[800],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    height: 250,
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        imageUrl!,
-                                        fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress.expectedTotalBytes != null
-                                                  ? loadingProgress.cumulativeBytesLoaded / 
-                                                    loadingProgress.expectedTotalBytes!
-                                                  : null,
-                                            ),
-                                          );
-                                        },
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            color: Colors.grey[200],
-                                            child: Center(
-                                              child: Icon(
-                                                Icons.broken_image,
-                                                size: 64,
-                                                color: Colors.grey[400],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 16),
-                                  ElevatedButton.icon(
-                                    onPressed: validateBird,
-                                    icon: Icon(Icons.search),
-                                    label: Text(
-                                      'Validate Bird',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.teal,
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          
-                        // Classify bird button (only show if bird is detected)
-                        if (isBird)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 20.0),
-                            child: ElevatedButton.icon(
-                              onPressed: classifyBird,
-                              icon: Icon(Icons.category),
-                              label: Text(
-                                'Classify Bird Species',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber[700],
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                                  ],
                                 ),
                               ),
                             ),
                           ),
-                          
-                        // Image selection section
-                        if (predictionImages.isNotEmpty)
+
+                        if (!isLoading) ...[
+                          // Image source buttons
                           Container(
-                            margin: EdgeInsets.symmetric(vertical: 20),
-                            padding: EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withOpacity(0.8),
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black12,
-                                  blurRadius: 10,
                                   spreadRadius: 1,
+                                  blurRadius: 5,
                                 ),
                               ],
                             ),
+                            padding: EdgeInsets.all(16),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                Text(
+                                  'Select Image Source',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 16),
                                 Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    Icon(Icons.collections, color: Colors.teal),
-                                    SizedBox(width: 8),
+                                    // Gallery Button
                                     Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Select the most similar images',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
+                                      child: ElevatedButton.icon(
+                                        onPressed: pickImage,
+                                        icon: Icon(Icons.photo_library),
+                                        label: Text('Gallery'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color.fromARGB(255, 202, 226, 255),
+                                          foregroundColor: Colors.black87,
+                                          padding: const EdgeInsets.symmetric(vertical: 12),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
-                                        ],
+                                        ),
                                       ),
                                     ),
-                                    Container(
-                                      padding: EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.teal[50],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        '${selectedImages.length}/3',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.teal,
+                                    SizedBox(width: 16),
+                                    // Camera Button
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: captureImage,
+                                        icon: Icon(Icons.camera_alt),
+                                        label: Text('Camera'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:  const Color.fromARGB(255, 202, 226, 255),
+                                          foregroundColor: Colors.black87,
+                                          padding: EdgeInsets.symmetric(vertical: 12),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 16),
-                                GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 10,
-                                    childAspectRatio: 1,
-                                  ),
-                                  itemCount: predictionImages.length,
-                                  itemBuilder: (context, index) {
-                                    final url = predictionImages[index];
-                                    final isSelected = selectedImages.contains(url);
-                                    return GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          if (isSelected) {
-                                            selectedImages.remove(url);
-                                          } else if (selectedImages.length < 3) {
-                                            selectedImages.add(url);
-                                          }
-                                          showConfirmButton = selectedImages.isNotEmpty;
-                                        });
-                                      },
-                                      child: Stack(
-                                        children: [
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              border: Border.all(
-                                                color: isSelected ? Colors.blue : Colors.grey[300]!,
-                                                width: isSelected ? 3 : 1,
-                                              ),
-                                              borderRadius: BorderRadius.circular(12),
-                                              boxShadow: isSelected ? [
-                                                BoxShadow(
-                                                  color: Colors.blue.withOpacity(0.3),
-                                                  blurRadius: 8,
-                                                  spreadRadius: 1,
-                                                ),
-                                              ] : null,
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(10),
-                                              child: getCachedImage(url),
-                                            ),
-                                          ),
-                                          if (isSelected)
-                                            Positioned(
-                                              right: 5,
-                                              top: 5,
-                                              child: Container(
-                                                padding: EdgeInsets.all(4),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blue,
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Icon(
-                                                  Icons.check,
-                                                  color: Colors.white,
-                                                  size: 14,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                ),
-                                if (showConfirmButton)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 20.0),
-                                    child:
-                                    Column(
-                                      children: [
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton.icon(
-                                            icon: const Icon(Icons.check_circle),
-                                            label: Text(
-                                              "Confirm Selection",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            onPressed: sendSelectedImagesForFinalClassification,
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.green[600],
-                                              foregroundColor: Colors.white,
-                                              padding: EdgeInsets.symmetric(vertical: 12),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(height: 12),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: OutlinedButton.icon(
-                                            icon: const Icon(Icons.not_interested),
-                                            label: Text(
-                                              "None of these",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                resultMessage = "Hmm, this bird doesn't match any species in our system. We're constantly expanding—stay tuned!";
-                                                selectedImages.clear();
-                                                showConfirmButton = false;
-                                              });
-                                            },
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: Colors.red[600],
-                                              side: BorderSide(color: Colors.red[300]!),
-                                              padding: EdgeInsets.symmetric(vertical: 12),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  ),
                               ],
                             ),
                           ),
 
-                        // Result message
-                        if (resultMessage != null)
-                          Container(
-                            margin: EdgeInsets.symmetric(vertical: 16),
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 5,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  resultMessage!.contains('detected!') ? Icons.check_circle : Icons.info,
-                                  color: resultMessage!.contains('detected!') ? Colors.green : Colors.blue,
-                                  size: 24,
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    resultMessage!,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
+                          SizedBox(height: 20),
+
+                          // Uploaded image section
+                          if (imageUrl != null)
+                            Card(
+                              elevation: 5,
+                              shadowColor: Colors.black26,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "Uploaded Image",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color.fromRGBO(37, 99, 235, 1),
+                                      ),
                                     ),
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      height: 250,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          imageUrl!,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null) return child;
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                value: loadingProgress.expectedTotalBytes != null
+                                                    ? loadingProgress.cumulativeBytesLoaded /
+                                                    loadingProgress.expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey[200],
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  size: 64,
+                                                  color: Colors.grey[400],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 16),
+                                    ElevatedButton.icon(
+                                      onPressed: validateBird,
+                                      icon: Icon(Icons.search),
+                                      label: Text(
+                                        'Validate Bird',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color.fromRGBO(37, 99, 235, 1),
+                                        foregroundColor: Colors.white,
+                                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                          // Classify bird button (only show if bird is detected)
+                          if (isBird)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 20.0),
+                              child: ElevatedButton.icon(
+                                onPressed: classifyBird,
+                                icon: Icon(Icons.category),
+                                label: Text(
+                                  'Classify Bird Species',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color.fromRGBO(37, 99, 235, 1),
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
-                          
-                        // Prediction results
-                        if (initialPrediction != null || detectedSpecies != null)
-                          Container(
-                            margin: EdgeInsets.symmetric(vertical: 16),
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                if (initialPrediction != null)
-                                  Column(
+
+                          // Image selection section
+                          if (predictionImages.isNotEmpty)
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 20),
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
                                     children: [
+                                      Icon(Icons.collections, color:  const Color.fromARGB(255, 202, 226, 255)),
+                                      SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Select the most similar images',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: const Color.fromARGB(255, 202, 226, 255),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          '${selectedImages.length}/3',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color:  const Color.fromARGB(255, 202, 226, 255),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 16),
+                                  GridView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: 10,
+                                      mainAxisSpacing: 10,
+                                      childAspectRatio: 1,
+                                    ),
+                                    itemCount: predictionImages.length,
+                                    itemBuilder: (context, index) {
+                                      final url = predictionImages[index];
+                                      final isSelected = selectedImages.contains(url);
+                                      return GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            if (isSelected) {
+                                              selectedImages.remove(url);
+                                            } else if (selectedImages.length < 3) {
+                                              selectedImages.add(url);
+                                            }
+                                            showConfirmButton = selectedImages.isNotEmpty;
+                                          });
+                                        },
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                  color: isSelected ? Colors.blue : Colors.grey[300]!,
+                                                  width: isSelected ? 3 : 1,
+                                                ),
+                                                borderRadius: BorderRadius.circular(12),
+                                                boxShadow: isSelected ? [
+                                                  BoxShadow(
+                                                    color: Colors.blue.withOpacity(0.3),
+                                                    blurRadius: 8,
+                                                    spreadRadius: 1,
+                                                  ),
+                                                ] : null,
+                                              ),
+                                              child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: getCachedImage(url),
+                                              ),
+                                            ),
+                                            if (isSelected)
+                                              Positioned(
+                                                right: 5,
+                                                top: 5,
+                                                child: Container(
+                                                  padding: EdgeInsets.all(4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.blue,
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.check,
+                                                    color: Colors.white,
+                                                    size: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  if (showConfirmButton)
+                                    Padding(
+                                        padding: const EdgeInsets.only(top: 20.0),
+                                        child:
+                                        Column(
+                                          children: [
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: ElevatedButton.icon(
+                                                icon: const Icon(Icons.check_circle),
+                                                label: Text(
+                                                  "Confirm Selection",
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                onPressed: sendSelectedImagesForFinalClassification,
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor:const Color.fromRGBO(37, 99, 235, 1),
+                                                  foregroundColor: Colors.white,
+                                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(height: 12),
+                                            SizedBox(
+                                              width: double.infinity,
+                                              child: OutlinedButton.icon(
+                                                icon: const Icon(Icons.not_interested),
+                                                label: Text(
+                                                  "None of these",
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    resultMessage = "Hmm, this bird doesn't match any species in our system. We're constantly expanding—stay tuned!";
+                                                    selectedImages.clear();
+                                                    showConfirmButton = false;
+                                                  });
+                                                },
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: Colors.red[600],
+                                                  side: BorderSide(color: Colors.red[300]!),
+                                                  padding: EdgeInsets.symmetric(vertical: 12),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(12),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                    ),
+                                ],
+                              ),
+                            ),
+
+                          // Result message
+                          if (resultMessage != null)
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 5,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    resultMessage!.contains('detected!') ? Icons.check_circle : Icons.info,
+                                    color: resultMessage!.contains('detected!') ? Colors.green : Colors.blue,
+                                    size: 24,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      resultMessage!,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                          // Prediction results
+                          if (initialPrediction != null || detectedSpecies != null)
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                  children: [
+                                    if (initialPrediction != null)
+                                      Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.auto_awesome,
+                                                color: Colors.amber,
+                                              ),
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  'Initial Prediction',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.grey[700],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                            child: Container(
+                                              width: double.infinity,
+                                              padding: EdgeInsets.all(12),
+                                              decoration: BoxDecoration(
+                                                color: Colors.amber[50],
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(color: Colors.amber[100]!),
+                                              ),
+                                              child: Text(
+                                                initialPrediction!,
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.amber[800],
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                    if (detectedSpecies != null) ...[
+
+                                      SizedBox(height: initialPrediction != null ? 20 : 0),
                                       Row(
                                         children: [
                                           Icon(
-                                            Icons.auto_awesome,
-                                            color: Colors.amber,
+                                            Icons.check_circle,
+                                            color:const Color.fromRGBO(37, 99, 235, 1),
                                           ),
                                           SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              'Initial Prediction',
+                                              'Final Prediction',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
@@ -854,148 +900,102 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                           width: double.infinity,
                                           padding: EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: Colors.amber[50],
+                                            color: Colors.green[50],
                                             borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Colors.amber[100]!),
+                                            border: Border.all(color: Colors.green[100]!),
                                           ),
                                           child: Text(
-                                            initialPrediction!,
+                                            detectedSpecies!,
                                             style: TextStyle(
-                                              fontSize: 18,
+                                              fontSize: 20,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.amber[800],
+                                              color: const Color.fromRGBO(37, 99, 235, 1),
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  
-                                if (detectedSpecies != null) ...[
-
-                                  SizedBox(height: initialPrediction != null ? 20 : 0),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check_circle,
-                                        color: Colors.green,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'Final Prediction',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey[700],
+                                      if (finalPredictionImage != null)
+                                        Container(
+                                          margin: EdgeInsets.only(top: 16),
+                                          height: 220,
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(12),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withOpacity(0.2),
+                                                blurRadius: 8,
+                                                spreadRadius: 2,
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: Image.asset(
+                                              finalPredictionImage!,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                      ),
                                     ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green[50],
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: Colors.green[100]!),
-                                      ),
-                                      child: Text(
-                                        detectedSpecies!,
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green[800],
-                                        ),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                  if (finalPredictionImage != null)
-                                    Container(
-                                      margin: EdgeInsets.only(top: 16),
-                                      height: 220,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withOpacity(0.2),
-                                            blurRadius: 8,
-                                            spreadRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.asset(
-                                          finalPredictionImage!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ]
+                                  ]
                               ),
-                          ),
-                        
-                        // Bird info button
-                        if (s3ImageUrl != null && detectedSpecies != null && !detectedSpecies!.contains(','))
-                          Container(
-                            width: double.infinity,
-                            margin: EdgeInsets.only(top: 20),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal[600],
-                                foregroundColor: Colors.white,
-                                padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                            ),
+
+                          // Bird info button
+                          if (s3ImageUrl != null && detectedSpecies != null && !detectedSpecies!.contains(','))
+                            Container(
+                              width: double.infinity,
+                              margin: EdgeInsets.only(top: 20),
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:  const Color.fromARGB(255, 202, 226, 255),
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 4,
                                 ),
-                                elevation: 4,
-                              ),
-                              onPressed: () {
-                                var birdData = BirdRepository.birdData.firstWhere(
-                                  (bird) => bird["name"]!.toLowerCase() == detectedSpecies!.toLowerCase(),
-                                  orElse: () => {
-                                    "name": "Unknown Bird",
-                                    "image": "assets/placeholder.jpg",
-                                    "description": "No description available."
-                                  },
-                                );
+                                onPressed: () {
+                                  var birdData = BirdRepository.birdData.firstWhere(
+                                        (bird) => bird["name"]!.toLowerCase() == detectedSpecies!.toLowerCase(),
+                                    orElse: () => {
+                                      "name": "Unknown Bird",
+                                      "image": "assets/placeholder.jpg",
+                                      "description": "No description available."
+                                    },
+                                  );
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BirdDetailScreen(
-                                      birdName: birdData["name"]!,
-                                      birdImage: birdData["image"]!,
-                                      birdDescription: birdData["description"]!,
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BirdDetailScreen(
+                                        birdName: birdData["name"]!,
+                                        birdImage: birdData["image"]!,
+                                        birdDescription: birdData["description"]!,
+                                      ),
                                     ),
+                                  );
+                                },
+                                icon: Icon(Icons.info_outline, size: 24),
+                                label: Text(
+                                  "View Bird Details",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                );
-                              },
-                              icon: Icon(Icons.info_outline, size: 24),
-                              label: Text(
-                                "View Bird Details",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          ),
-                     ],
-                    ]
-                    ),
+                        ],
+                      ]
                   ),
                 ),
               ),
             ),
+          ),
         ],
       ),
     );
@@ -1065,9 +1065,9 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       // Try loading the image with .JPG
       final jpgUrl = url.replaceAllMapped(
         RegExp(r'\.jpg$', caseSensitive: false),
-        (match) => '.JPG',
+            (match) => '.JPG',
       );
-      
+
       try {
         final response = await http.head(Uri.parse(jpgUrl));
         if (response.statusCode == 200) {
@@ -1081,9 +1081,9 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       // Fallback to .jpg if .JPG fails
       final lowercaseUrl = url.replaceAllMapped(
         RegExp(r'\.JPG$', caseSensitive: false),
-        (match) => '.jpg',
+            (match) => '.jpg',
       );
-      
+
       try {
         final fallbackResponse = await http.head(Uri.parse(lowercaseUrl));
         if (fallbackResponse.statusCode == 200) {
@@ -1103,7 +1103,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       return url;
     }
   }
-  
+
   @override
   void dispose() {
     // Clear any resources when the widget is disposed

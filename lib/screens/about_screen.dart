@@ -5,13 +5,14 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[100],
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
-        backgroundColor: Colors.green[100],
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         title: Text(
           'About Us',
-          style: TextStyle(color: Colors.black, fontSize: 25),
+          style: TextStyle(color: Color.fromRGBO(37, 99, 235, 1),
+              fontSize: 25),
         ),
         centerTitle: true,
       ),
@@ -34,7 +35,7 @@ class AboutScreen extends StatelessWidget {
               child: Text(
                 "CONTACT INFO",
                 style: TextStyle(
-                  color: Colors.green[700],
+                  color: Color.fromRGBO(37, 99, 235, 1),
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
@@ -49,7 +50,7 @@ class AboutScreen extends StatelessWidget {
             SizedBox(height: 20),
             _buildInfoCard(
               imageUrl:
-                  'https://img.icons8.com/bubbles/100/000000/new-post.png',
+              'https://img.icons8.com/bubbles/100/000000/new-post.png',
               title: 'Email',
               subtitle: 'dileepvadla27@gmail.com',
               onTap: _launchEmail,
@@ -57,7 +58,7 @@ class AboutScreen extends StatelessWidget {
             SizedBox(height: 20),
             _buildInfoCard(
               imageUrl:
-                  'https://img.icons8.com/bubbles/100/000000/map-marker.png',
+              'https://img.icons8.com/bubbles/100/000000/map-marker.png',
               title: 'Address',
               subtitle: 'VIT-AP University',
               onTap: _launchLocation,
@@ -65,21 +66,68 @@ class AboutScreen extends StatelessWidget {
             SizedBox(height: 40),
             Center(
                 child: Column(
-              children: [
-                ElevatedButton(
-                  onPressed: () => _launchUrl(
-                      'https://drive.google.com/drive/folders/1Dp92XBB8ewhxPe_xPguy7PLMSH4yGHsb'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white54,
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-                  ),
-                  child: Text(
-                    'View Dataset',
-                    style: TextStyle(fontSize: 18, color: Colors.black54),
-                  ),
-                )
-              ],
-            ))
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => _launchUrl(
+                          'https://drive.google.com/drive/folders/1Dp92XBB8ewhxPe_xPguy7PLMSH4yGHsb'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:  Color.fromRGBO(37, 99, 235, 1),
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      ),
+                      child: Text(
+                        'View Dataset',
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.center, // Optional: center the button
+                      child: ElevatedButton(
+                        onPressed: () => _launchUrl('https://t.me/BirdzClassification_Bot'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromRGBO(37, 99, 235, 1),
+                          padding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 4,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap, // optional, avoids extra padding
+                          minimumSize: Size(0, 0), // ensures button size is not forced
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.telegram, color: Colors.white),
+                            SizedBox(width: 6),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: const [
+                                Text(
+                                  'Need to classify many images?',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  'check out our Telegram bot',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+
+
+                  ],
+                ))
           ],
         ),
       ),
@@ -110,7 +158,7 @@ class AboutScreen extends StatelessWidget {
   // Function to launch location in Google Maps
   Future<void> _launchLocation() async {
     final Uri locationUri =
-        Uri.parse('https://www.google.com/maps?q=VIT-AP+University');
+    Uri.parse('https://www.google.com/maps?q=VIT-AP+University');
     if (await canLaunch(locationUri.toString())) {
       await launch(locationUri.toString());
     } else {
@@ -143,7 +191,7 @@ class AboutScreen extends StatelessWidget {
         title: Text(
           title,
           style: TextStyle(
-            color: Colors.green[700],
+            color: Color.fromRGBO(37, 99, 235, 1),
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),

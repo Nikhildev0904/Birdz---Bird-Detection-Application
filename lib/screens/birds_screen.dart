@@ -39,9 +39,9 @@ class _BirdSearchScreenState extends State<BirdsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[100],
+      backgroundColor: const Color.fromARGB(255, 202, 226, 255),
       appBar: AppBar(
-        backgroundColor: Colors.green[100],
+        backgroundColor:  const Color.fromARGB(255, 202, 226, 255),
         elevation: 0,
         title: Text('Find Your Bird!',
             style: TextStyle(color: Colors.black, fontSize: 25)),
@@ -75,66 +75,66 @@ class _BirdSearchScreenState extends State<BirdsScreen> {
             SizedBox(height: 16),
             filteredBirdData.isEmpty
                 ? Column(
-                    children: [
-                      Text(
-                        "No birds found!",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                      )
-                    ],
-                  )
-                : Expanded(
-                    child: ListView.builder(
-                      itemCount: filteredBirdData.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => BirdDetailScreen(
-                                  birdName: filteredBirdData[index]["name"]!,
-                                  birdImage: filteredBirdData[index]["image"]!,
-                                  birdDescription: filteredBirdData[index]
-                                      ["description"]!,
-                                ),
-                              ),
-                            );
-                          },
-                          child: Card(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    backgroundImage: AssetImage(
-                                        filteredBirdData[index]["image"]!),
-                                    radius: 20,
-                                    backgroundColor: Colors.grey[300],
-                                  ),
-                                  SizedBox(width: 16),
-                                  Text(
-                                    filteredBirdData[index]["name"]!,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+              children: [
+                Text(
+                  "No birds found!",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black54,
                   ),
+                )
+              ],
+            )
+                : Expanded(
+              child: ListView.builder(
+                itemCount: filteredBirdData.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BirdDetailScreen(
+                            birdName: filteredBirdData[index]["name"]!,
+                            birdImage: filteredBirdData[index]["image"]!,
+                            birdDescription: filteredBirdData[index]
+                            ["description"]!,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage: AssetImage(
+                                  filteredBirdData[index]["image"]!),
+                              radius: 20,
+                              backgroundColor: Colors.grey[300],
+                            ),
+                            SizedBox(width: 16),
+                            Text(
+                              filteredBirdData[index]["name"]!,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),

@@ -10,31 +10,31 @@ class AppDrawer extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: [
-          DrawerHeader(
+          const DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFFB8FFA9), Colors.black],
+                colors: [Color.fromARGB(255, 255, 255, 255)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
             ),
             child: Center(
               child: Text(
-              'Birdz',
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+                'Birdz',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.bold,
+                  color:Color.fromRGBO(37, 99, 235, 1),
+                ),
               ),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home, color: Colors.green),
-            title: Text(
+            leading: Icon(Icons.home, color: const Color.fromRGBO(37, 99, 235, 1)),
+            title: const Text(
               'Home',
               style: TextStyle(
-                  color: Colors.green, // Set the desired text color
+                  color: Color.fromARGB(255, 0, 0, 0), // Set the desired text color
                   fontWeight: FontWeight.bold),
             ),
             onTap: () {
@@ -43,11 +43,11 @@ class AppDrawer extends StatelessWidget {
             }, // Set index for Home
           ),
           ListTile(
-            leading: Icon(Icons.camera_alt, color: Colors.green),
+            leading: Icon(Icons.camera_alt, color: Color.fromRGBO(37, 99, 235, 1)),
             title: Text(
               'Classify',
               style: TextStyle(
-                  color: Colors.green, // Set the desired text color
+                  color: const Color.fromARGB(255, 0, 0, 0), // Set the desired text color
                   fontWeight: FontWeight.bold),
             ),
             onTap: () {
@@ -56,29 +56,42 @@ class AppDrawer extends StatelessWidget {
             }, // Set index for Classify
           ),
           ListTile(
-            leading: Icon(Icons.flutter_dash, color: Colors.green),
+            leading: Icon(Icons.location_on, color: Color.fromRGBO(37, 99, 235, 1)),
             title: Text(
-              'Birds',
+              'locate',
               style: TextStyle(
-                  color: Colors.green, // Set the desired text color
+                  color: const Color.fromARGB(255, 0, 0, 0), // Set the desired text color
                   fontWeight: FontWeight.bold),
             ),
             onTap: () {
               Navigator.pop(context); // Closes the AppDrawer
               onSelectItem(2); // Navigate to Home
-            }, // Set index for Birds
+            }, // Set index for Classify
           ),
           ListTile(
-            leading: Icon(Icons.info, color: Colors.green),
+            leading: Icon(Icons.flutter_dash, color: Color.fromRGBO(37, 99, 235, 1)),
             title: Text(
-              'About',
+              'Birds',
               style: TextStyle(
-                  color: Colors.green, // Set the desired text color
+                  color: const Color.fromARGB(255, 0, 0, 0), // Set the desired text color
                   fontWeight: FontWeight.bold),
             ),
             onTap: () {
               Navigator.pop(context); // Closes the AppDrawer
               onSelectItem(3); // Navigate to Home
+            }, // Set index for Birds
+          ),
+          ListTile(
+            leading: Icon(Icons.info, color: Color.fromRGBO(37, 99, 235, 1)),
+            title: Text(
+              'About',
+              style: TextStyle(
+                  color: const Color.fromARGB(255, 0, 0, 0), // Set the desired text color
+                  fontWeight: FontWeight.bold),
+            ),
+            onTap: () {
+              Navigator.pop(context); // Closes the AppDrawer
+              onSelectItem(4); // Navigate to Home
             }, // Set index for About
           ),
         ],

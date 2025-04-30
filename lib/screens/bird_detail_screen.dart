@@ -35,17 +35,17 @@ class BirdDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Return multiple values through `extractLocation`.
+    // Return multiple values through extractLocation.
     final locationResult =
-        extractLocation(birdDescription); // retrieve location
+    extractLocation(birdDescription); // retrieve location
     String location = locationResult["location"]!;
     String cleanDescription = locationResult["description"]!;
 
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: const Color.fromRGBO(239, 246, 254, 1), // Light blue background
       resizeToAvoidBottomInset: true, // Prevent overflow when keyboard pops up
       appBar: AppBar(
-        backgroundColor: Colors.green[100],
+        backgroundColor: const Color.fromARGB(255, 202, 226, 255), // Light blue background
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
         title: Text(
@@ -109,7 +109,8 @@ class BirdDetailScreen extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
-                              color: Colors.green[700],
+                              color: Color.fromRGBO(37, 99, 235, 1),
+
                             ),
                           ),
                       ],
@@ -120,7 +121,8 @@ class BirdDetailScreen extends StatelessWidget {
                 // "Know More" Button
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor:Color.fromRGBO(37, 99, 235, 1),
+
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
