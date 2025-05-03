@@ -14,9 +14,11 @@ class ClassifyScreen extends StatefulWidget {
   @override
   _ClassifyScreenState createState() => _ClassifyScreenState();
 }
+
 // base url
 const String BaseUrl = 'https://mytownly.in';
 //const String BaseUrl = 'https://0b85-103-186-254-122.ngrok-free.app';
+
 class _ClassifyScreenState extends State<ClassifyScreen> {
   final picker = ImagePicker();
   String? imageUrl;
@@ -31,6 +33,11 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   Map<String, dynamic>? probabilities; // Store probabilities
   String? initialPrediction; // Store initial prediction bird species
   String? finalPredictionImage; // Store final predicted bird image path
+  List<String>? classifiedBirds; // Store list of classified birds
+  bool hasMultipleBirds = false; // Flag to indicate multiple birds
+  final GlobalKey _resultKey = GlobalKey(); // Key for scrolling to results
+  final GlobalKey _messageKey = GlobalKey();
+  final GlobalKey _imageSelectionKey = GlobalKey();
 
   // Cache for resolved image URLs to prevent unnecessary network requests
   Map<String, String> resolvedImageCache = {};
@@ -39,7 +46,23 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
 
   // Upload image to the server
   Future<void> uploadImage(File imageFile) async {
-    setState(() => isLoading = true); // Setting loading to true
+    setState(() {
+      isLoading = true;
+      // Reset all previous results
+      resultMessage = null;
+      detectedSpecies = null;
+      s3ImageUrl = null;
+      isBird = false;
+      predictionImages = [];
+      selectedImages.clear();
+      showConfirmButton = false;
+      initialPrediction = null;
+      finalPredictionImage = null;
+      classifiedBirds = null;
+      hasMultipleBirds = false;
+      resolvedImageCache.clear();
+    });
+
     final request = http.MultipartRequest(
       'POST',
       Uri.parse('$BaseUrl/upload'),
@@ -53,7 +76,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       final data = json.decode(responseData.body);
       setState(() {
         imageUrl = data['url'];
-        print("image url"+imageUrl!);
+        print("image url" + imageUrl!);
         resultMessage = 'Image uploaded successfully!';
       });
     } else {
@@ -87,8 +110,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
     setState(() => isLoading = false);
   }
 
-  // Classify the bird species
-  Future<void> classifyBird() async {
+  // First classify the image to check for single or multiple birds
+  Future<void> classifyImage() async {
     if (!isBird) {
       setState(() {
         resultMessage = 'No bird detected; classification skipped.';
@@ -104,6 +127,65 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
     }
 
     setState(() => isLoading = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$BaseUrl/classify/'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"birdLink": imageUrl}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['classifiedBirds'] != null) {
+          setState(() {
+            classifiedBirds = List<String>.from(data['classifiedBirds']);
+            s3ImageUrl = data['s3ImageUrl'];
+
+            if (classifiedBirds!.length == 1) {
+              // Single bird detected, proceed with classification
+              hasMultipleBirds = false;
+              // Now proceed to get probabilities
+              classifyBird();
+            } else {
+              // Multiple birds detected
+              hasMultipleBirds = true;
+              final uniqueBirds = {...classifiedBirds!}.toList();
+              resultMessage =
+                  'Multiple birds detected: ${uniqueBirds.join(", ")}';
+              isLoading = false;
+            }
+          });
+        } else {
+          setState(() {
+            resultMessage = 'No birds classified in the image.';
+            isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          resultMessage = 'Classification failed! (${response.statusCode})';
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        resultMessage = 'An error occurred: $e';
+        isLoading = false;
+      });
+    }
+  }
+
+  // Classify the bird species
+  Future<void> classifyBird() async {
+    if (imageUrl == null) {
+      setState(() {
+        resultMessage = 'Image URL is missing. Please upload an image first.';
+        isLoading = false;
+      });
+      return;
+    }
 
     try {
       final response = await http.post(
@@ -156,8 +238,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
               print("Final prediction images: $predictionImages");
 
               probabilities = probabilitiesData; // Store probabilities in state
-              initialPrediction = probabilitiesData[
-                  'topPrediction1_class']; // Store initial prediction
+              // Don't set initial prediction here, will be set after user selection
               selectedImages.clear();
               resultMessage = null;
             });
@@ -166,6 +247,15 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
             for (String url in predictionImages) {
               resolveImageUrl(url);
             }
+            Future.delayed(Duration(milliseconds: 300), () {
+              if (_imageSelectionKey.currentContext != null) {
+                Scrollable.ensureVisible(
+                  _imageSelectionKey.currentContext!,
+                  duration: Duration(milliseconds: 600),
+                  curve: Curves.easeInOut,
+                );
+              }
+            });
           } else {
             setState(() {
               predictionImages = [];
@@ -203,6 +293,10 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       predictionImages = [];
       selectedImages.clear();
       showConfirmButton = false;
+      initialPrediction = null;
+      finalPredictionImage = null;
+      classifiedBirds = null;
+      hasMultipleBirds = false;
       resolvedImageCache.clear(); // Clear the image cache
     });
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -226,6 +320,10 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       predictionImages = [];
       selectedImages.clear();
       showConfirmButton = false;
+      initialPrediction = null;
+      finalPredictionImage = null;
+      classifiedBirds = null;
+      hasMultipleBirds = false;
       resolvedImageCache.clear(); // Clear the image cache
     });
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
@@ -284,6 +382,11 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
             classCounts[class2Name].toString(),
       );
 
+      // Set initial prediction now that user has made a selection
+      setState(() {
+        initialPrediction = probabilities!['topPrediction1_class'];
+      });
+
       // Prepare the payload for the API
       final payload = {
         "birdLink": imageUrl, // URL of the uploaded bird image
@@ -320,11 +423,20 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
               },
             );
 
-            setState(() {
-              finalPredictionImage =
-                  birdData["image"]; // Set final prediction image from birdData
-              resultMessage = null;
-            });
+            finalPredictionImage =
+                birdData["image"]; // Set final prediction image from birdData
+            resultMessage = null;
+          });
+
+          // Scroll to the results after a short delay to allow rendering
+          Future.delayed(Duration(milliseconds: 300), () {
+            if (_resultKey.currentContext != null) {
+              Scrollable.ensureVisible(
+                _resultKey.currentContext!,
+                duration: Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+              );
+            }
           });
         } else {
           setState(() {
@@ -347,10 +459,10 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   }
 
   // Navigate to bird details screen
-  void _navigateToBirdDetails() {
-    if (detectedSpecies != null && !detectedSpecies!.contains(',')) {
+  void _navigateToBirdDetails(String? birdName) {
+    if (birdName != null && !birdName.contains(',')) {
       var birdData = BirdRepository.birdData.firstWhere(
-        (bird) => bird["name"]!.toLowerCase() == detectedSpecies!.toLowerCase(),
+        (bird) => bird["name"]!.toLowerCase() == birdName.toLowerCase(),
         orElse: () => {
           "name": "Unknown Bird",
           "image": "assets/placeholder.jpg",
@@ -555,6 +667,49 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
 
                           SizedBox(height: 24),
 
+                          // Result message at the top for better visibility
+                          if (resultMessage != null && !hasMultipleBirds)
+                            Container(
+                              key: _messageKey,
+                              margin: EdgeInsets.symmetric(vertical: 16),
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    resultMessage!.contains('detected!')
+                                        ? Icons.check_circle
+                                        : Icons.info,
+                                    color: resultMessage!.contains('detected!')
+                                        ? Colors.green[600]
+                                        : Color(0xFF2563EB),
+                                    size: 24,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      resultMessage!,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
                           // Uploaded image section
                           if (imageUrl != null)
                             Container(
@@ -685,7 +840,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                               child: SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: classifyBird,
+                                  onPressed:
+                                      classifyImage, // Changed to classifyImage
                                   icon: Icon(Icons.category),
                                   label: Text(
                                     'Classify Bird Species',
@@ -694,6 +850,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Color(0xFF2563EB),
                                     foregroundColor: Colors.white,
@@ -707,43 +864,139 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                               ),
                             ),
 
-                          // Result message
-                          if (resultMessage != null)
+                          // Multiple birds detected message
+                          if (hasMultipleBirds && classifiedBirds != null)
                             Container(
                               margin: EdgeInsets.symmetric(vertical: 20),
-                              padding: EdgeInsets.all(16),
+                              padding: EdgeInsets.all(20),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 3),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Row(
+                              child: Column(
                                 children: [
-                                  Icon(
-                                    resultMessage!.contains('detected!')
-                                        ? Icons.check_circle
-                                        : Icons.info,
-                                    color: resultMessage!.contains('detected!')
-                                        ? Colors.green[600]
-                                        : Color(0xFF2563EB),
-                                    size: 24,
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        color: Color(0xFF2563EB),
+                                        size: 24,
+                                      ),
+                                      SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          'Multiple Birds Detected',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E40AF),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      resultMessage!,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
+                                  SizedBox(height: 16),
+                                  if (s3ImageUrl != null)
+                                    Container(
+                                      height: 250,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.1),
+                                            blurRadius: 8,
+                                            offset: Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.network(
+                                          s3ImageUrl!,
+                                          fit: BoxFit.cover,
+                                          loadingBuilder: (context, child,
+                                              loadingProgress) {
+                                            if (loadingProgress == null)
+                                              return child;
+                                            return Center(
+                                              child: CircularProgressIndicator(
+                                                color: Color(0xFF2563EB),
+                                                value: loadingProgress
+                                                            .expectedTotalBytes !=
+                                                        null
+                                                    ? loadingProgress
+                                                            .cumulativeBytesLoaded /
+                                                        loadingProgress
+                                                            .expectedTotalBytes!
+                                                    : null,
+                                              ),
+                                            );
+                                          },
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey[100],
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.broken_image,
+                                                  size: 64,
+                                                  color: Colors.grey[400],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
                                       ),
                                     ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'The following birds were identified:',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  SizedBox(height: 12),
+                                  Container(
+                                    padding: EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFE7F0FF),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color:
+                                            Color(0xFF2563EB).withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      // Get unique birds and display them
+                                      {...classifiedBirds!}.join(", "),
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1E40AF),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Please use an image with a single bird for detailed classification.',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey[700],
+                                    ),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ],
                               ),
@@ -752,6 +1005,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                           // Image selection section - Vertical Layout (as requested by boss)
                           if (predictionImages.isNotEmpty)
                             Container(
+                              key: _imageSelectionKey,
                               margin: EdgeInsets.symmetric(vertical: 24),
                               padding: EdgeInsets.all(20),
                               decoration: BoxDecoration(
@@ -951,12 +1205,13 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                       );
                                     },
                                   ),
-                                  if (showConfirmButton)
-                                    Padding(
-                                        padding:
-                                            const EdgeInsets.only(top: 20.0),
-                                        child: Column(
-                                          children: [
+
+                                  // Always show the "None of these match" button
+                                  Padding(
+                                      padding: const EdgeInsets.only(top: 20.0),
+                                      child: Column(
+                                        children: [
+                                          if (selectedImages.isNotEmpty)
                                             SizedBox(
                                               width: double.infinity,
                                               child: ElevatedButton.icon(
@@ -986,44 +1241,65 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                                 ),
                                               ),
                                             ),
+                                          if (selectedImages.isNotEmpty)
                                             SizedBox(height: 16),
-                                            SizedBox(
-                                              width: double.infinity,
-                                              child: OutlinedButton.icon(
-                                                icon: const Icon(
-                                                    Icons.not_interested),
-                                                label: Text(
-                                                  "None of these match",
-                                                  style: TextStyle(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: OutlinedButton.icon(
+                                              icon: const Icon(
+                                                  Icons.not_interested),
+                                              label: Text(
+                                                "None of these match",
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
-                                                onPressed: () {
-                                                  setState(() {
-                                                    resultMessage =
-                                                        "Hmm, this bird doesn't match any species in our system. We're constantly expanding—stay tuned!";
-                                                    selectedImages.clear();
-                                                    showConfirmButton = false;
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  initialPrediction = null;
+                                                  detectedSpecies = null;
+                                                  finalPredictionImage = null;
+                                                  resultMessage =
+                                                      "Hmm, this bird doesn't match any species in our system. We're constantly expanding—stay tuned!";
+                                                  selectedImages.clear();
+                                                  showConfirmButton = false;
+
+                                                  // Scroll to the message after a short delay to allow UI to update
+                                                  Future.delayed(
+                                                      Duration(
+                                                          milliseconds: 300),
+                                                      () {
+                                                    if (_messageKey
+                                                            .currentContext !=
+                                                        null) {
+                                                      Scrollable.ensureVisible(
+                                                        _messageKey
+                                                            .currentContext!,
+                                                        duration: Duration(
+                                                            milliseconds: 600),
+                                                        curve: Curves.easeInOut,
+                                                      );
+                                                    }
                                                   });
-                                                },
-                                                style: OutlinedButton.styleFrom(
-                                                  foregroundColor:
-                                                      Colors.red[600],
-                                                  side: BorderSide(
-                                                      color: Colors.red[300]!),
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 16),
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                  ),
+                                                });
+                                              },
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor:
+                                                    Colors.red[600],
+                                                side: BorderSide(
+                                                    color: Colors.red[300]!),
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 16),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                 ),
                                               ),
                                             ),
-                                          ],
-                                        )),
+                                          ),
+                                        ],
+                                      )),
                                 ],
                               ),
                             ),
@@ -1032,6 +1308,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                           if (initialPrediction != null ||
                               detectedSpecies != null)
                             Container(
+                              key: _resultKey, // Key for scrolling to results
                               margin: EdgeInsets.symmetric(vertical: 20),
                               padding: EdgeInsets.all(24),
                               decoration: BoxDecoration(
@@ -1046,20 +1323,25 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                 ],
                               ),
                               child: Column(children: [
-                                if (initialPrediction != null)
+                                // Check if predictions are the same
+                                if (initialPrediction != null &&
+                                    detectedSpecies != null &&
+                                    initialPrediction!.toLowerCase() ==
+                                        detectedSpecies!.toLowerCase())
+                                  // Single prediction with both headings
                                   Column(
                                     children: [
                                       Row(
                                         children: [
                                           Icon(
-                                            Icons.auto_awesome,
-                                            color: Color(0xFFF59E0B),
+                                            Icons.check_circle,
+                                            color: Color(0xFF10B981),
                                             size: 24,
                                           ),
                                           SizedBox(width: 10),
                                           Expanded(
                                             child: Text(
-                                              'Initial Prediction',
+                                              'Initial & Final Prediction',
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontWeight: FontWeight.bold,
@@ -1074,260 +1356,636 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                         width: double.infinity,
                                         padding: EdgeInsets.all(16),
                                         decoration: BoxDecoration(
-                                          color: Color(0xFFFFEDD5),
+                                          color: Color(0xFFD1FAE5),
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           border: Border.all(
-                                              color: Color(0xFFF59E0B)
-                                                  .withOpacity(0.5)),
+                                            color: Color(0xFF10B981)
+                                                .withOpacity(0.5),
+                                          ),
                                         ),
-                                        child: Column(
-                                          children: [
-                                            Text(
-                                              initialPrediction!,
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFFB45309),
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
+                                        child: Text(
+                                          detectedSpecies!,
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF065F46),
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
                                       ),
-                                      // Add uploaded image display for initial prediction
-                                      SizedBox(height: 16),
-                                      if (imageUrl != null)
-                                        Container(
-                                          height: 200,
-                                          width: double.infinity,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withOpacity(0.1),
-                                                blurRadius: 8,
-                                                offset: Offset(0, 4),
-                                              ),
-                                            ],
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            child: Image.network(
-                                              imageUrl!,
-                                              fit: BoxFit.cover,
-                                              loadingBuilder: (context, child,
-                                                  loadingProgress) {
-                                                if (loadingProgress == null)
-                                                  return child;
-                                                return Center(
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    color: Color(0xFF2563EB),
-                                                    value: loadingProgress
-                                                                .expectedTotalBytes !=
-                                                            null
-                                                        ? loadingProgress
-                                                                .cumulativeBytesLoaded /
-                                                            loadingProgress
-                                                                .expectedTotalBytes!
-                                                        : null,
+                                      // S3 image display that's clickable
+                                      if (s3ImageUrl != null)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 20.0),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Icon(
+                                                    Icons.touch_app,
+                                                    color: Color(0xFF1E40AF),
+                                                    size: 18,
                                                   ),
-                                                );
-                                              },
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                return Container(
-                                                  color: Colors.grey[100],
-                                                  child: Center(
-                                                    child: Icon(
-                                                      Icons.broken_image,
-                                                      size: 64,
-                                                      color: Colors.grey[400],
+                                                  SizedBox(width: 8),
+                                                  Text(
+                                                    "Tap image to see bird details",
+                                                    style: TextStyle(
+                                                      fontSize: 14,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                      color: Color(0xFF1E40AF),
                                                     ),
                                                   ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                if (detectedSpecies != null) ...[
-                                  SizedBox(
-                                      height:
-                                          initialPrediction != null ? 30 : 0),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.check_circle,
-                                        color: Color(0xFF10B981),
-                                        size: 24,
-                                      ),
-                                      SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          'Final Prediction',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1E40AF),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 16),
-                                  Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFD1FAE5),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: Color(0xFF10B981)
-                                              .withOpacity(0.5)),
-                                    ),
-                                    child: Text(
-                                      detectedSpecies!,
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF065F46),
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  // Add final prediction image with tap to see details
-                                  if (finalPredictionImage != null)
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 20.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.touch_app,
-                                                color: Color(0xFF1E40AF),
-                                                size: 18,
+                                                ],
                                               ),
-                                              SizedBox(width: 8),
-                                              Text(
-                                                "Tap image to see bird details",
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontStyle: FontStyle.italic,
-                                                  color: Color(0xFF1E40AF),
+                                              SizedBox(height: 12),
+                                              GestureDetector(
+                                                onTap: () =>
+                                                    _navigateToBirdDetails(
+                                                        detectedSpecies),
+                                                child: Container(
+                                                  height: 220,
+                                                  width: double.infinity,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            12),
+                                                    boxShadow: [
+                                                      BoxShadow(
+                                                        color: Colors.black
+                                                            .withOpacity(0.15),
+                                                        blurRadius: 10,
+                                                        spreadRadius: 2,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  child: Stack(
+                                                    children: [
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        child: Image.network(
+                                                          s3ImageUrl!,
+                                                          height: 220,
+                                                          width:
+                                                              double.infinity,
+                                                          fit: BoxFit.cover,
+                                                          loadingBuilder: (context,
+                                                              child,
+                                                              loadingProgress) {
+                                                            if (loadingProgress ==
+                                                                null)
+                                                              return child;
+                                                            return Center(
+                                                              child:
+                                                                  CircularProgressIndicator(
+                                                                color: Color(
+                                                                    0xFF2563EB),
+                                                                value: loadingProgress
+                                                                            .expectedTotalBytes !=
+                                                                        null
+                                                                    ? loadingProgress
+                                                                            .cumulativeBytesLoaded /
+                                                                        loadingProgress
+                                                                            .expectedTotalBytes!
+                                                                    : null,
+                                                              ),
+                                                            );
+                                                          },
+                                                          errorBuilder:
+                                                              (context, error,
+                                                                  stackTrace) {
+                                                            return Container(
+                                                              color: Colors
+                                                                  .grey[100],
+                                                              child: Center(
+                                                                child: Icon(
+                                                                  Icons
+                                                                      .broken_image,
+                                                                  size: 64,
+                                                                  color: Colors
+                                                                          .grey[
+                                                                      400],
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                      // View details overlay
+                                                      Positioned(
+                                                        bottom: 0,
+                                                        left: 0,
+                                                        right: 0,
+                                                        child: Container(
+                                                          padding: EdgeInsets
+                                                              .symmetric(
+                                                                  vertical: 10,
+                                                                  horizontal:
+                                                                      16),
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            gradient:
+                                                                LinearGradient(
+                                                              begin: Alignment
+                                                                  .bottomCenter,
+                                                              end: Alignment
+                                                                  .topCenter,
+                                                              colors: [
+                                                                Colors.black
+                                                                    .withOpacity(
+                                                                        0.7),
+                                                                Colors
+                                                                    .transparent,
+                                                              ],
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .only(
+                                                              bottomLeft: Radius
+                                                                  .circular(12),
+                                                              bottomRight:
+                                                                  Radius
+                                                                      .circular(
+                                                                          12),
+                                                            ),
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment
+                                                                    .center,
+                                                            children: [
+                                                              Icon(
+                                                                Icons
+                                                                    .info_outline,
+                                                                color: Colors
+                                                                    .white,
+                                                                size: 18,
+                                                              ),
+                                                              SizedBox(
+                                                                  width: 8),
+                                                              Text(
+                                                                "View Details",
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  fontSize: 16,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
                                               ),
                                             ],
                                           ),
-                                          SizedBox(height: 12),
-                                          GestureDetector(
-                                            onTap: _navigateToBirdDetails,
-                                            child: Container(
-                                              height: 220,
+                                        ),
+                                    ],
+                                  )
+                                else
+                                  // Original code for different predictions
+                                  Column(
+                                    children: [
+                                      if (initialPrediction != null)
+                                        Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Icon(
+                                                  Icons.auto_awesome,
+                                                  color: Color(0xFFF59E0B),
+                                                  size: 24,
+                                                ),
+                                                SizedBox(width: 10),
+                                                Expanded(
+                                                  child: Text(
+                                                    'Initial Prediction',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF1E40AF),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 16),
+                                            Container(
                                               width: double.infinity,
+                                              padding: EdgeInsets.all(16),
                                               decoration: BoxDecoration(
+                                                color: Color(0xFFFFEDD5),
                                                 borderRadius:
                                                     BorderRadius.circular(12),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black
-                                                        .withOpacity(0.15),
-                                                    blurRadius: 10,
-                                                    spreadRadius: 2,
+                                                border: Border.all(
+                                                    color: Color(0xFFF59E0B)
+                                                        .withOpacity(0.5)),
+                                              ),
+                                              child: Column(
+                                                children: [
+                                                  Text(
+                                                    initialPrediction!,
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFFB45309),
+                                                    ),
+                                                    textAlign: TextAlign.center,
                                                   ),
                                                 ],
                                               ),
-                                              child: Stack(
-                                                children: [
-                                                  ClipRRect(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            12),
-                                                    child: Image.asset(
-                                                      finalPredictionImage!,
-                                                      height: 220,
-                                                      width: double.infinity,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                  ),
-                                                  // View details overlay
-                                                  Positioned(
-                                                    bottom: 0,
-                                                    left: 0,
-                                                    right: 0,
-                                                    child: Container(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              vertical: 10,
-                                                              horizontal: 16),
-                                                      decoration: BoxDecoration(
-                                                        gradient:
-                                                            LinearGradient(
-                                                          begin: Alignment
-                                                              .bottomCenter,
-                                                          end: Alignment
-                                                              .topCenter,
-                                                          colors: [
-                                                            Colors.black
-                                                                .withOpacity(
-                                                                    0.7),
-                                                            Colors.transparent,
-                                                          ],
+                                            ),
+                                            // Add uploaded image display for initial prediction
+                                            SizedBox(height: 16),
+                                            if (s3ImageUrl != null)
+                                              GestureDetector(
+                                                onTap: () =>
+                                                    _navigateToBirdDetails(
+                                                        initialPrediction),
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Icon(
+                                                          Icons.touch_app,
+                                                          color:
+                                                              Color(0xFF1E40AF),
+                                                          size: 18,
                                                         ),
-                                                        borderRadius:
-                                                            BorderRadius.only(
-                                                          bottomLeft:
-                                                              Radius.circular(
-                                                                  12),
-                                                          bottomRight:
-                                                              Radius.circular(
-                                                                  12),
-                                                        ),
-                                                      ),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          Icon(
-                                                            Icons.info_outline,
-                                                            color: Colors.white,
-                                                            size: 18,
+                                                        SizedBox(width: 8),
+                                                        Text(
+                                                          "Tap image to see bird details",
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            fontStyle: FontStyle
+                                                                .italic,
+                                                            color: Color(
+                                                                0xFF1E40AF),
                                                           ),
-                                                          SizedBox(width: 8),
-                                                          Text(
-                                                            "View Details",
-                                                            style: TextStyle(
-                                                              color:
-                                                                  Colors.white,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 16,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    SizedBox(height: 12),
+                                                    Container(
+                                                      height: 200,
+                                                      width: double.infinity,
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: Colors.black
+                                                                .withOpacity(
+                                                                    0.1),
+                                                            blurRadius: 8,
+                                                            offset:
+                                                                Offset(0, 4),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: Stack(
+                                                        children: [
+                                                          ClipRRect(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        12),
+                                                            // child: Image.network(
+                                                            //   s3ImageUrl!,
+                                                            //   fit: BoxFit.cover,
+                                                            //   loadingBuilder: (context, child,
+                                                            //       loadingProgress) {
+                                                            //     if (loadingProgress == null)
+                                                            //       return child;
+                                                            //     return Center(
+                                                            //       child:
+                                                            //       CircularProgressIndicator(
+                                                            //         color: Color(0xFF2563EB),
+                                                            //         value: loadingProgress
+                                                            //             .expectedTotalBytes !=
+                                                            //             null
+                                                            //             ? loadingProgress
+                                                            //             .cumulativeBytesLoaded /
+                                                            //             loadingProgress
+                                                            //                 .expectedTotalBytes!
+                                                            //             : null,
+                                                            //       ),
+                                                            //     );
+                                                            //   },
+                                                            //   errorBuilder:
+                                                            //       (context, error, stackTrace) {
+                                                            //     return Container(
+                                                            //       color: Colors.grey[100],
+                                                            //       child: Center(
+                                                            //         child: Icon(
+                                                            //           Icons.broken_image,
+                                                            //           size: 64,
+                                                            //           color: Colors.grey[400],
+                                                            //         ),
+                                                            //       ),
+                                                            //     );
+                                                            //   },
+                                                            // ),
+                                                            child: Image.asset(
+                                                              'assets/${initialPrediction!}.jpg',
+                                                              height: 250,
+                                                              width: double
+                                                                  .infinity,
+                                                              fit: BoxFit.cover,
+                                                            ),
+                                                          ),
+                                                          // View details overlay
+                                                          Positioned(
+                                                            bottom: 0,
+                                                            left: 0,
+                                                            right: 0,
+                                                            child: Container(
+                                                              padding: EdgeInsets
+                                                                  .symmetric(
+                                                                      vertical:
+                                                                          10,
+                                                                      horizontal:
+                                                                          16),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                gradient:
+                                                                    LinearGradient(
+                                                                  begin: Alignment
+                                                                      .bottomCenter,
+                                                                  end: Alignment
+                                                                      .topCenter,
+                                                                  colors: [
+                                                                    Colors.black
+                                                                        .withOpacity(
+                                                                            0.7),
+                                                                    Colors
+                                                                        .transparent,
+                                                                  ],
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .only(
+                                                                  bottomLeft: Radius
+                                                                      .circular(
+                                                                          12),
+                                                                  bottomRight: Radius
+                                                                      .circular(
+                                                                          12),
+                                                                ),
+                                                              ),
+                                                              child: Row(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  Icon(
+                                                                    Icons
+                                                                        .info_outline,
+                                                                    color: Colors
+                                                                        .white,
+                                                                    size: 18,
+                                                                  ),
+                                                                  SizedBox(
+                                                                      width: 8),
+                                                                  Text(
+                                                                    "View Details",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          16,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
                                                             ),
                                                           ),
                                                         ],
                                                       ),
                                                     ),
-                                                  ),
-                                                ],
+                                                  ],
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      if (detectedSpecies != null) ...[
+                                        SizedBox(
+                                            height: initialPrediction != null
+                                                ? 30
+                                                : 0),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle,
+                                              color: Color(0xFF10B981),
+                                              size: 24,
+                                            ),
+                                            SizedBox(width: 10),
+                                            Expanded(
+                                              child: Text(
+                                                'Final Prediction',
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF1E40AF),
+                                                ),
                                               ),
                                             ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 16),
+                                        Container(
+                                          width: double.infinity,
+                                          padding: EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFD1FAE5),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            border: Border.all(
+                                                color: Color(0xFF10B981)
+                                                    .withOpacity(0.5)),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                ],
+                                          child: Text(
+                                            detectedSpecies!,
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF065F46),
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                        // Add final prediction image with tap to see details
+                                        if (finalPredictionImage != null)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 20.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.touch_app,
+                                                      color: Color(0xFF1E40AF),
+                                                      size: 18,
+                                                    ),
+                                                    SizedBox(width: 8),
+                                                    Text(
+                                                      "Tap image to see bird details",
+                                                      style: TextStyle(
+                                                        fontSize: 14,
+                                                        fontStyle:
+                                                            FontStyle.italic,
+                                                        color:
+                                                            Color(0xFF1E40AF),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 12),
+                                                GestureDetector(
+                                                  onTap: () =>
+                                                      _navigateToBirdDetails(
+                                                          detectedSpecies),
+                                                  child: Container(
+                                                    height: 220,
+                                                    width: double.infinity,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: Colors.black
+                                                              .withOpacity(
+                                                                  0.15),
+                                                          blurRadius: 10,
+                                                          spreadRadius: 2,
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    child: Stack(
+                                                      children: [
+                                                        ClipRRect(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(12),
+                                                          child: Image.asset(
+                                                            finalPredictionImage!,
+                                                            height: 250,
+                                                            width:
+                                                                double.infinity,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                        ),
+                                                        // View details overlay
+                                                        Positioned(
+                                                          bottom: 0,
+                                                          left: 0,
+                                                          right: 0,
+                                                          child: Container(
+                                                            padding: EdgeInsets
+                                                                .symmetric(
+                                                                    vertical:
+                                                                        10,
+                                                                    horizontal:
+                                                                        16),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              gradient:
+                                                                  LinearGradient(
+                                                                begin: Alignment
+                                                                    .bottomCenter,
+                                                                end: Alignment
+                                                                    .topCenter,
+                                                                colors: [
+                                                                  Colors.black
+                                                                      .withOpacity(
+                                                                          0.7),
+                                                                  Colors
+                                                                      .transparent,
+                                                                ],
+                                                              ),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .only(
+                                                                bottomLeft: Radius
+                                                                    .circular(
+                                                                        12),
+                                                                bottomRight:
+                                                                    Radius
+                                                                        .circular(
+                                                                            12),
+                                                              ),
+                                                            ),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                Icon(
+                                                                  Icons
+                                                                      .info_outline,
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 18,
+                                                                ),
+                                                                SizedBox(
+                                                                    width: 8),
+                                                                Text(
+                                                                  "View Details",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    fontSize:
+                                                                        16,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    ],
+                                  ),
                               ]),
                             ),
+
+                          // Rest of the UI
                         ],
                       ]),
                 ),
@@ -1339,7 +1997,6 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
     );
   }
 
-  // Get cached image to prevent reloading on selection
   Widget getCachedImage(String url) {
     // If we've already resolved this URL, use the cached version
     if (resolvedImageCache.containsKey(url)) {

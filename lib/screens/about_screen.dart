@@ -452,7 +452,7 @@ class AboutScreen extends StatelessWidget {
   Future<void> _launchEmail() async {
     final Uri emailUri = Uri(
       scheme: 'mailto',
-      path: 'dileepvadla27@gmail.com',
+      path: 'birdz.queries@gmail.com',
     );
     if (await canLaunch(emailUri.toString())) {
       await launch(emailUri.toString());
