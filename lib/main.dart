@@ -19,7 +19,7 @@ class BirdApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[100],
         appBarTheme: const AppBarTheme(
           backgroundColor:const Color.fromRGBO(37, 99, 235, 1),
-          foregroundColor: Colors.white,
+          foregroundColor: Color.fromRGBO(37, 99, 235, 1),
           elevation: 4,
         ),
         textTheme: TextTheme(

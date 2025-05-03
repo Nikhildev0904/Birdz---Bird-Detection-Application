@@ -40,13 +40,11 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Add the PNG logo here
             Image.asset(
-              'assets/logo1.png',
+              'assets/bird_logo.png',
               height: 60,
               width: 60,
-              color: Colors.blue, // Change this to your desired color
-              colorBlendMode: BlendMode.modulate,
             ),
-            SizedBox(width: 8), // Adds spacing between icon and title
+            SizedBox(width: 4), // Adds spacing between icon and title
             const Text(
               'Birdz',
               style: TextStyle(

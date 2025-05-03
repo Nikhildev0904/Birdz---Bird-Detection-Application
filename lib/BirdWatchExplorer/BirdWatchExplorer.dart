@@ -270,7 +270,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
                 title: Text(
-                  "BirdWatch Explorer",
+                  "Birds Near You",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -399,6 +399,16 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                     ),
                   ),
                   SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
+                    child: Text(
+                      "© Data accessed through the eBird API 2.0",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color.fromRGBO(37, 99, 235, 1),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

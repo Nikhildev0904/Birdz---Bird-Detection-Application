@@ -11,13 +11,6 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         children: [
           const DrawerHeader(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color.fromARGB(255, 255, 255, 255)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
             child: Center(
               child: Text(
                 'Birdz',
@@ -58,7 +51,7 @@ class AppDrawer extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.location_on, color: Color.fromRGBO(37, 99, 235, 1)),
             title: Text(
-              'locate',
+              'Locate',
               style: TextStyle(
                   color: const Color.fromARGB(255, 0, 0, 0), // Set the desired text color
                   fontWeight: FontWeight.bold),
