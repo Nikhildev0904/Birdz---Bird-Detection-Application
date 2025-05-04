@@ -16,9 +16,9 @@ class HomeContent extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
+            Colors.blue.shade50,
             Colors.white,
-            const Color.fromARGB(255, 255, 255, 255)
-          ], // Define gradient colors
+          ],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -26,86 +26,167 @@ class HomeContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Top section with header and button
           Padding(
-            padding: const EdgeInsets.all(30.0),
+            padding: const EdgeInsets.fromLTRB(30.0, 40.0, 30.0, 20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 5),
-                Row(children: [
-                  Text(
-                    'Find Your Bird',
-                    style: TextStyle(
-                      fontSize: 35, // Increase font size
-                      fontWeight: FontWeight.bold,
-                      color: const Color.fromRGBO(37, 99, 235,
-                          1), // Use a dark green for better contrast
+                // Header with icon
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.pets, // Bird icon (use a bird-specific icon if available)
+                        color: Color.fromRGBO(37, 99, 235, 1),
+                        size: 35,
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 5),
-                  // Lottie.asset(
-                  //   'assets/animations/b3.json',
-                  //   height: 100,
-                  //   width: 100,
-                  // ),
-                ]),
-                ElevatedButton(
-                  onPressed: () {
-                    onSelectTab(1);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black, // Text color
-                    backgroundColor: Colors.white, // Button background
-                    elevation: 2, // Slight shadow
-                    side: BorderSide(color: Colors.blue, width: 1.5), // Border
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                      BorderRadius.circular(10), // Rounded corners
+                    SizedBox(width: 15),
+                    Text(
+                      'Find Your Bird',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromRGBO(37, 99, 235, 1),
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 22, vertical: 10),
-                  ),
-                  child: Text(
-                    'Validate & Classify',
-                    style: TextStyle(color: Colors.black, fontSize: 23,fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  height: 5,
+                  ],
                 ),
 
-                SizedBox(height: 15), //25
-                // Lottie.asset(
-                //   'assets/animations/b4.json',
-                //   height: 100,
-                //   width: 550,
-                // ),
+                SizedBox(height: 20),
+
+                // Description text
+                Text(
+                  'Discover and learn about different bird species with our interactive gallery',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                    height: 1.4,
+                  ),
+                ),
+
+                SizedBox(height: 25),
+
+                // Button with improved styling
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      onSelectTab(1);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color.fromRGBO(37, 99, 235, 1),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25,
+                        vertical: 15,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.camera_alt, size: 20),
+                        SizedBox(width: 10),
+                        Text(
+                          'Validate & Classify',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
+
+          // Section title for carousel
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Featured Birds',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // This could navigate to a full gallery in the future
+                    onSelectTab(3); // Adjust based on your tab structure
+                  },
+                  child: Text(
+                    'View All',
+                    style: TextStyle(
+                      color: Color.fromRGBO(37, 99, 235, 1),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 10),
+
+          // Improved Carousel
           Expanded(
             child: Center(
               child: CarouselSlider(
                 options: CarouselOptions(
-                  height: 290.0,
+                  height: 320.0,
                   autoPlay: true,
                   autoPlayInterval: Duration(seconds: 3),
                   enlargeCenterPage: true,
+                  viewportFraction: 0.75,
+                  aspectRatio: 16/9,
                 ),
                 items: birdData.asMap().entries.map((entry) {
-                  Map<String, String> bird = entry.value; // Get bird details
+                  Map<String, String> bird = entry.value;
 
                   return GestureDetector(
                     onTap: () {
-                      // Navigate to BirdDetailsScreen, passing bird details
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => BirdDetailScreen(
-                            birdName: bird["name"]!, // Bird name
-                            birdImage: bird["image"]!, // Bird image
-                            birdDescription:
-                            bird["description"]!, // Bird description
+                            birdName: bird["name"]!,
+                            birdImage: bird["image"]!,
+                            birdDescription: bird["description"]!,
                           ),
                         ),
                       );
@@ -113,22 +194,103 @@ class HomeContent extends StatelessWidget {
                     child: Container(
                       margin: EdgeInsets.symmetric(horizontal: 5.0),
                       decoration: BoxDecoration(
-                        borderRadius:
-                        BorderRadius.circular(15.0), // Rounded corners
-                        border:
-                        Border.all(color: Colors.black, width: 2), // Border
+                        borderRadius: BorderRadius.circular(20.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black26, // Shadow color
-                            blurRadius: 5, // Blur radius
-                            spreadRadius: 2, // Shadow spread
+                            color: Colors.black26,
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                            offset: Offset(0, 4),
                           ),
                         ],
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                            15.0), // Image corners match container
-                        child: Image.asset(bird["image"]!, fit: BoxFit.cover),
+                      child: Stack(
+                        children: [
+                          // Bird image
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(20.0),
+                            child: Image.asset(
+                              bird["image"]!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                            ),
+                          ),
+                          // Gradient overlay at bottom for text readability
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 80,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(20),
+                                  bottomRight: Radius.circular(20),
+                                ),
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withOpacity(0.7),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Bird name
+                          Positioned(
+                            bottom: 20,
+                            left: 20,
+                            child: Text(
+                              bird["name"] ?? "Unknown Bird",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(1, 1),
+                                    blurRadius: 3,
+                                    color: Colors.black.withOpacity(0.5),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // "Tap to learn more" hint
+                          Positioned(
+                            top: 15,
+                            right: 15,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.info_outline,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Details',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -136,6 +298,9 @@ class HomeContent extends StatelessWidget {
               ),
             ),
           ),
+
+          // Bottom spacing
+          SizedBox(height: 20),
         ],
       ),
     );

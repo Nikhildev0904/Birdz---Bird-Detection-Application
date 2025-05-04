@@ -6,7 +6,6 @@ import 'package:coffee_app/screens/about_screen.dart';
 import 'package:coffee_app/BirdWatchExplorer/BirdWatchExplorer.dart';
 import 'package:coffee_app/screens/home_content.dart';
 
-
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -30,27 +29,50 @@ class _HomeScreenState extends State<HomeScreen> {
       BirdsScreen(),
       AboutScreen(),
     ];
-//0xFFB8FFA9
+
     return Scaffold(
       appBar: _selectedIndex == 0 // Show AppBar only on Home screen
           ? AppBar(
-        backgroundColor: const Color.fromARGB(255, 202, 226, 255),
-
+        elevation: 0, // Remove shadow
+        backgroundColor: Colors.white, // Clean white background
         title: Row(
           children: [
-            // Add the PNG logo here
-            Image.asset(
-              'assets/bird_logo.png',
-              height: 60,
-              width: 60,
+            // Logo with subtle shadow
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.withOpacity(0.2),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+              child: Image.asset(
+                'assets/bird_logo.png',
+                height: 50,
+                width: 50,
+              ),
             ),
-            SizedBox(width: 4), // Adds spacing between icon and title
-            const Text(
-              'Birdz',
-              style: TextStyle(
+            SizedBox(width: 12), // Increased spacing for better layout
+            // App name with custom gradient text
+            ShaderMask(
+              shaderCallback: (bounds) => LinearGradient(
+                colors: [
+                  Color(0xFF1E40AF), // Deeper blue
+                  Color(0xFF3B82F6), // Medium blue
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ).createShader(bounds),
+              child: Text(
+                'Birdz',
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 35, // Adjust size as needed
-                  color: Color.fromRGBO(37, 99, 235, 1) // You can change the text color
+                  fontSize: 35,
+                  color: Colors.white, // This becomes the gradient color
+                ),
               ),
             ),
           ],
@@ -58,32 +80,60 @@ class _HomeScreenState extends State<HomeScreen> {
       )
           : null, // No AppBar on other screens
       endDrawer: AppDrawer(onSelectItem: _onItemTapped),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+      body: Container(
+        // Wrap the body in a container with decoration
+        decoration: BoxDecoration(
+          // Use a subtle pattern with blue and white
+          color: Colors.white,
+          image: DecorationImage(
+            image: AssetImage('assets/subtle_pattern.png'), // Add a subtle pattern asset
+            opacity: 0.05, // Very light pattern
+            repeat: ImageRepeat.repeat,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.camera_alt),
-            label: 'Classify',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_on),
-            label: 'Locate',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.flutter_dash),
-            label: 'Birds',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'About',
-          ),
-        ],
+        ),
+        child: _pages[_selectedIndex],
+      ),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          backgroundColor: Colors.white,
+          selectedItemColor: Color(0xFF2563EB), // Primary blue color
+          unselectedItemColor: Colors.grey.shade600,
+          type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.camera_alt_rounded),
+              label: 'Classify',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.location_on_rounded),
+              label: 'Locate',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.flutter_dash_rounded),
+              label: 'Birds',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.info_rounded),
+              label: 'About',
+            ),
+          ],
+        ),
       ),
     );
   }

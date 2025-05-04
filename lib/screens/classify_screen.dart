@@ -33,6 +33,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   Map<String, dynamic>? probabilities; // Store probabilities
   String? initialPrediction; // Store initial prediction bird species
   String? finalPredictionImage; // Store final predicted bird image path
+  String? initialPredictionImage; //Store initial predicted bird image path
   List<String>? classifiedBirds; // Store list of classified birds
   bool hasMultipleBirds = false; // Flag to indicate multiple birds
   final GlobalKey _resultKey = GlobalKey(); // Key for scrolling to results
@@ -43,6 +44,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   Map<String, String> resolvedImageCache = {};
 
   bool showConfirmButton = false;
+
 
   // Upload image to the server
   Future<void> uploadImage(File imageFile) async {
@@ -58,6 +60,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       showConfirmButton = false;
       initialPrediction = null;
       finalPredictionImage = null;
+      initialPredictionImage = null;
       classifiedBirds = null;
       hasMultipleBirds = false;
       resolvedImageCache.clear();
@@ -295,6 +298,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       showConfirmButton = false;
       initialPrediction = null;
       finalPredictionImage = null;
+      initialPredictionImage = null;
       classifiedBirds = null;
       hasMultipleBirds = false;
       resolvedImageCache.clear(); // Clear the image cache
@@ -322,6 +326,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       showConfirmButton = false;
       initialPrediction = null;
       finalPredictionImage = null;
+      initialPredictionImage = null;
       classifiedBirds = null;
       hasMultipleBirds = false;
       resolvedImageCache.clear(); // Clear the image cache
@@ -425,6 +430,19 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
 
             finalPredictionImage =
                 birdData["image"]; // Set final prediction image from birdData
+
+            final birdDataForInitial = BirdRepository.birdData.firstWhere(
+                  (bird) =>
+              bird["name"]!.toLowerCase() == initialPrediction!.toLowerCase(),
+              orElse: () => {
+                "image":
+                "assets/placeholder.jpg", // Use a placeholder image if not found
+              },
+            );
+
+            initialPredictionImage =
+            birdDataForInitial["image"];
+
             resultMessage = null;
           });
 
@@ -1260,6 +1278,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                                   initialPrediction = null;
                                                   detectedSpecies = null;
                                                   finalPredictionImage = null;
+                                                  initialPredictionImage = null;
                                                   resultMessage =
                                                       "Hmm, this bird doesn't match any species in our system. We're constantly expanding—stay tuned!";
                                                   selectedImages.clear();
@@ -1430,8 +1449,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                                             BorderRadius
                                                                 .circular(12),
                                                         child: Image.network(
-                                                          s3ImageUrl!,
-                                                          height: 220,
+                                                          imageUrl!,
+                                                          height: 250,
                                                           width:
                                                               double.infinity,
                                                           fit: BoxFit.cover,
@@ -1704,7 +1723,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                                             //   },
                                                             // ),
                                                             child: Image.asset(
-                                                              'assets/${initialPrediction!}.jpg',
+                                                              initialPredictionImage!,
                                                               height: 250,
                                                               width: double
                                                                   .infinity,
