@@ -49,7 +49,7 @@ class HomeContent extends StatelessWidget {
                         ],
                       ),
                       child: Icon(
-                        Icons.pets, // Bird icon (use a bird-specific icon if available)
+                        Icons.flutter_dash, // Bird icon (use a bird-specific icon if available)
                         color: Color.fromRGBO(37, 99, 235, 1),
                         size: 35,
                       ),
@@ -71,7 +71,7 @@ class HomeContent extends StatelessWidget {
 
                 // Description text
                 Text(
-                  'Discover and learn about different bird species with our interactive gallery',
+                  'Explore our interactive gallery to identify and learn about different bird species, or use our AI-powered tool to classify birds from your photos.',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.black87,

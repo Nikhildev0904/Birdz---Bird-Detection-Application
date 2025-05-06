@@ -5,7 +5,7 @@ class AboutScreen extends StatelessWidget {
   // Only include the two specified developers
   final List<Map<String, String>> developers = [
     {
-      "name": "Nikhil Dev Arepu",
+      "name": "Nikhil Dev A",
       "role": "App Developer",
       "linkedin": "https://www.linkedin.com/in/nikhil-dev-arepu/",
     },
@@ -14,6 +14,11 @@ class AboutScreen extends StatelessWidget {
       "role": "App Developer",
       "linkedin": "https://www.linkedin.com/in/dileep-vadla27/",
     },
+    {
+      "name": "Dileep Kumar C",
+      "role": "App Developer",
+      "linkedin": "https://www.linkedin.com/in/dileepkumarc003/",
+    }
   ];
 
   @override
@@ -76,7 +81,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      "Welcome to our Indian Bird Species Detection App! This app uses advanced machine learning algorithms to classify bird species from images. The app helps bird enthusiasts, researchers, and hobbyists identify birds accurately using just their phone camera or gallery photos. Try it out and explore the beautiful world of birds!",
+                      "Welcome to our Indian Bird Species Detection App! This app uses advanced machine learning algorithms to classify bird species from images. The app helps bird enthusiasts, researchers, and hobbyists identify birds accurately using just their phone camera or gallery photos. You can also discover nearby bird sightings and explore popular birding hotspots in your area with our location-based features. Try it out and explore the beautiful world of birds!",
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 16,
@@ -153,7 +158,7 @@ class AboutScreen extends StatelessWidget {
 
               SizedBox(height: 20),
 
-              // Team Members Row - Only Two Developers
+              // Team Members Row
               Row(
                 children: [
                   Expanded(
@@ -169,6 +174,20 @@ class AboutScreen extends StatelessWidget {
                       name: developers[1]["name"]!,
                       role: developers[1]["role"]!,
                       linkedinUrl: developers[1]["linkedin"]!,
+                    ),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDeveloperCard(
+                      name: developers[2]["name"]!,
+                      role: developers[2]["role"]!,
+                      linkedinUrl: developers[2]["linkedin"]!,
                     ),
                   ),
                 ],
@@ -291,13 +310,14 @@ class AboutScreen extends StatelessWidget {
 
               SizedBox(height: 16),
 
+              // Source Code Button
               _buildResourceButton(
-                icon: Icons.telegram,
-                title: 'Telegram Bot',
-                subtitle: 'Need to classify many images? Try our bot',
-                onTap: () => _launchUrl('https://t.me/BirdzClassification_Bot'),
+                icon: Icons.code_outlined,
+                title: 'View Source Code',
+                subtitle: 'Check out the source code on GitHub',
+                onTap: () => _launchUrl('https://github.com/Nikhildev0904/Birdz---Bird-Detection-Application'),
                 gradient: LinearGradient(
-                  colors: [Color(0xFF0088CC), Color(0xFF29B6F6)],
+                  colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

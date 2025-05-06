@@ -63,7 +63,7 @@ class BirdRepository {
           "Colorful bird with vivid blue wings, catches insects in flight. Known for its “rak-rak-rak” call. \n\nLocation: Open country, agricultural lands, and wooded areas across the Indian subcontinent."
     },
     {
-      "name": "Yellow-wattled lapwing",
+      "name": "Yellow wattled lapwing",
       "image":
           "assets/Yellow wattled lapwing.jpg", // Replace with your image path
       "description":

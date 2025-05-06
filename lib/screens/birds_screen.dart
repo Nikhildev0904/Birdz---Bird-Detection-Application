@@ -82,16 +82,6 @@ class _BirdSearchScreenState extends State<BirdsScreen> {
                           ),
                         ],
                       ),
-                      child: IconButton(
-                        icon: Icon(Icons.refresh_rounded),
-                        color: Color(0xFF2563EB),
-                        onPressed: () {
-                          setState(() {
-                            searchController.clear();
-                            filteredBirdData = birdData;
-                          });
-                        },
-                      ),
                     ),
                   ],
                 ),
