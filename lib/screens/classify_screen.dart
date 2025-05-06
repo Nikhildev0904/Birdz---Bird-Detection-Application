@@ -48,7 +48,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   bool showConfirmButton = false;
 
   Future<void> launchTelegramBot() async {
-    final Uri url = Uri.parse('https://t.me/BirdzClassificationBot');
+    final Uri url = Uri.parse('https://t.me/BirdzClassification_Bot');
     if (!await launchUrl(url)) {
       throw Exception('Could not launch $url');
     }
