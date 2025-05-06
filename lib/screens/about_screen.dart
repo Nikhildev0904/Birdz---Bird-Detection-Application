@@ -76,7 +76,7 @@ class AboutScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      "Welcome to our Indian Bird Species Detection App! This app uses advanced machine learning algorithms to classify bird species from images. The app helps bird enthusiasts, researchers, and hobbyists identify birds accurately using just their phone camera or gallery photos. Try it out and explore the beautiful world of birds!",
+                      "Welcome to our Indian Bird Species Detection App! This app uses advanced machine learning algorithms to classify bird species from images. The app helps bird enthusiasts, researchers, and hobbyists identify birds accurately using just their phone camera or gallery photos. You can also discover nearby bird sightings and explore popular birding hotspots in your area with our location-based features. Try it out and explore the beautiful world of birds!",
                       style: TextStyle(
                         color: Colors.black87,
                         fontSize: 16,
