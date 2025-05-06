@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../repositories/bird_repository.dart';
 import '../screens/bird_detail_screen.dart';
@@ -36,6 +37,7 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
   String? initialPredictionImage; //Store initial predicted bird image path
   List<String>? classifiedBirds; // Store list of classified birds
   bool hasMultipleBirds = false; // Flag to indicate multiple birds
+  bool showTelegramButton = true;
   final GlobalKey _resultKey = GlobalKey(); // Key for scrolling to results
   final GlobalKey _messageKey = GlobalKey();
   final GlobalKey _imageSelectionKey = GlobalKey();
@@ -45,11 +47,18 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
 
   bool showConfirmButton = false;
 
+  Future<void> launchTelegramBot() async {
+    final Uri url = Uri.parse('https://t.me/BirdzClassificationBot');
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
+  }
 
   // Upload image to the server
   Future<void> uploadImage(File imageFile) async {
     setState(() {
       isLoading = true;
+      showTelegramButton = false;
       // Reset all previous results
       resultMessage = null;
       detectedSpecies = null;
@@ -79,7 +88,8 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
       final data = json.decode(responseData.body);
       setState(() {
         imageUrl = data['url'];
-        print("image url" + imageUrl!);
+
+        //print("image url" + imageUrl!);
         resultMessage = 'Image uploaded successfully!';
       });
     } else {
@@ -679,6 +689,73 @@ class _ClassifyScreenState extends State<ClassifyScreen> {
                                     ),
                                   ],
                                 ),
+
+                                if (showTelegramButton && imageUrl == null) ...[
+                                  SizedBox(height: 24),
+                                  // Telegram Button styled exactly like the image
+                                  GestureDetector(
+                                    onTap: () => launchTelegramBot(),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                                      decoration: BoxDecoration(
+                                        color: Color(0xFF2B5CDF), // Telegram blue from image
+                                        borderRadius: BorderRadius.circular(32), // Fully rounded corners
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          // Telegram Icon
+                                          Container(
+                                            width: 32,
+                                            height: 32,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Icon(
+                                                Icons.telegram,
+                                                color: Color(0xFF2B5CDF),
+                                                size: 20,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  'Upload via Telegram Bot',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  'Classify multiple bird photos in seconds!',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                           ),
