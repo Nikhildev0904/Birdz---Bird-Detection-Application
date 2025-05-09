@@ -87,7 +87,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                   hintText: "Search for a location...",
                   hintStyle: TextStyle(color: Colors.grey[500]),
                   border: InputBorder.none,
-                  prefixIcon: Icon(Icons.search, color: Colors.green[700]),
+                  prefixIcon: Icon(Icons.search, color: const Color.fromRGBO(37, 99, 235, 1)),
                 ),
                 onSubmitted: (value) {
                   if (value.isNotEmpty) {
@@ -97,7 +97,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.my_location, color: Colors.green[700]),
+              icon: Icon(Icons.my_location, color: const Color.fromRGBO(37, 99, 235, 1)),
               onPressed: () {
                 _locationController.clear();
                 _useCustomLocation = false;
@@ -115,7 +115,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
     if (location.isEmpty) return;
 
     setState(() => _isLoading = true);
-    
+
     String url = "https://nominatim.openstreetmap.org/search?q=$location&format=json";
 
     try {
@@ -245,8 +245,8 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
           circleId: CircleId("search_radius"),
           center: LatLng(latitude, longitude),
           radius: _selectedRadius * 1000, // Convert km to meters
-          fillColor: Colors.green.withOpacity(0.3),
-          strokeColor: Colors.green,
+          fillColor:Colors.blue.withOpacity(0.3),
+          strokeColor:Colors.blue,
           strokeWidth: 2,
         ),
       };
@@ -260,7 +260,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50],
+      backgroundColor: const Color.fromARGB(255, 202, 226, 255),
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
@@ -270,7 +270,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
               pinned: true,
               flexibleSpace: FlexibleSpaceBar(
                 title: Text(
-                  "BirdWatch Explorer",
+                  "Birds Near You",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -312,144 +312,154 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
         },
         body: _isLoading
             ? Center(
-                child: Lottie.asset(
-                  'assets/animations/loading.json', // Loading animation
-                  width: 150,
-                  height: 150,
-                  fit: BoxFit.contain,
-                ),
-              )
+          child: Lottie.asset(
+            'assets/animations/loading.json', // Loading animation
+            width: 150,
+            height: 150,
+            fit: BoxFit.contain,
+          ),
+        )
             : Column(
+          children: [
+            _buildSearchBar(),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
                 children: [
-                  _buildSearchBar(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              "Search Radius:",
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            Expanded(
-                              child: Slider(
-                                value: _selectedRadius,
-                                min: 1,
-                                max: 50,
-                                divisions: 49,
-                                activeColor: Colors.green,
-                                inactiveColor: Colors.grey[300],
-                                onChanged: (double value) {
-                                  setState(() {
-                                    _selectedRadius = value;
-                                    _updateMap();
-                                    _googleMapController?.animateCamera(
-                                      CameraUpdate.newLatLngZoom(
-                                        LatLng(
-                                          _useCustomLocation
-                                              ? customLat ?? 20.5937
-                                              : _currentPosition?.latitude ?? 20.5937,
-                                          _useCustomLocation
-                                              ? customLong ?? 78.9629
-                                              : _currentPosition?.longitude ?? 78.9629,
-                                        ),
-                                        12,
-                                      ),
-                                    );
-                                  });
-                                },
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.green[100],
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.green[300]!),
-                              ),
-                              child: Text(
-                                "${_selectedRadius.toStringAsFixed(0)} km",
-                                style: TextStyle(
-                                  color: Colors.green[800],
-                                  fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      Text(
+                        "Search Radius:",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                      Expanded(
+                        child: Slider(
+                          value: _selectedRadius,
+                          min: 1,
+                          max: 50,
+                          divisions: 49,
+                          activeColor:const Color.fromRGBO(37, 99, 235, 1),
+                          inactiveColor: Colors.grey[300],
+                          onChanged: (double value) {
+                            setState(() {
+                              _selectedRadius = value;
+                              _updateMap();
+                              _googleMapController?.animateCamera(
+                                CameraUpdate.newLatLngZoom(
+                                  LatLng(
+                                    _useCustomLocation
+                                        ? customLat ?? 20.5937
+                                        : _currentPosition?.latitude ?? 20.5937,
+                                    _useCustomLocation
+                                        ? customLong ?? 78.9629
+                                        : _currentPosition?.longitude ?? 78.9629,
+                                  ),
+                                  12,
                                 ),
-                              ),
-                            ),
-                          ],
+                              );
+                            });
+                          },
                         ),
-                        SizedBox(height: 8),
-                        ElevatedButton(
-                          onPressed: _fetchBirdData,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green[700],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            minimumSize: Size(double.infinity, 0),
-                          ),
-                          child: Text(
-                            "SEARCH BIRDS",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color:  const Color.fromARGB(255, 202, 226, 255),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color.fromARGB(255, 202, 226, 255)!),
+                        ),
+                        child: Text(
+                          "${_selectedRadius.toStringAsFixed(0)} km",
+                          style: TextStyle(
+                            color:const Color.fromRGBO(37, 99, 235, 1),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
-                      ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: _fetchBirdData,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:const Color.fromRGBO(37, 99, 235, 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: Size(double.infinity, 0),
+                    ),
+                    child: Text(
+                      "SEARCH BIRDS",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                  Expanded(
-                    child: DefaultTabController(
-                      length: 2,
-                      child: Column(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, -2),
-                                ),
-                              ],
-                            ),
-                            child: TabBar(
-                              indicator: UnderlineTabIndicator(
-                                borderSide: BorderSide(width: 3, color: Colors.green[700]!),
-                                insets: EdgeInsets.symmetric(horizontal: 16),
-                              ),
-                              labelColor: Colors.green[800],
-                              unselectedLabelColor: Colors.grey,
-                              labelStyle: TextStyle(fontWeight: FontWeight.bold),
-                              tabs: [
-                                Tab(text: "Recent Sightings (${_recentSightings.length})"),
-                                Tab(text: "Hotspots (${_birdHotspots.length})"),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              color: Colors.white,
-                              child: TabBarView(
-                                children: [
-                                  _buildSightingsList(),
-                                  _buildHotspotsList(_birdHotspots),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
+                  SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 16),
+                    child: Text(
+                      "© Data accessed through the eBird API 2.0",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color.fromRGBO(37, 99, 235, 1),
                       ),
                     ),
                   ),
                 ],
               ),
+            ),
+            Expanded(
+              child: DefaultTabController(
+                length: 2,
+                child: Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 4,
+                            offset: Offset(0, -2),
+                          ),
+                        ],
+                      ),
+                      child: TabBar(
+                        indicator: UnderlineTabIndicator(
+                          borderSide: BorderSide(width: 3, color:const Color.fromRGBO(37, 99, 235, 1)!),
+                          insets: EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        labelColor:const Color.fromRGBO(37, 99, 235, 1),
+                        unselectedLabelColor: Colors.grey,
+                        labelStyle: TextStyle(fontWeight: FontWeight.bold),
+                        tabs: [
+                          Tab(text: "Recent Sightings (${_recentSightings.length})"),
+                          Tab(text: "Hotspots (${_birdHotspots.length})"),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        color: Colors.white,
+                        child: TabBarView(
+                          children: [
+                            _buildSightingsList(),
+                            _buildHotspotsList(_birdHotspots),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -506,7 +516,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
             ),
             TextButton(
               onPressed: _fetchBirdData,
-              child: Text("Try again", style: TextStyle(color: Colors.green[700])),
+              child: Text("Try again", style: TextStyle(color:const Color.fromRGBO(37, 99, 235, 1))),
             ),
           ],
         ),
@@ -547,10 +557,10 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: const Color.fromARGB(255, 202, 226, 255),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(Icons.air, color: Colors.green[700], size: 30),
+                    child: Icon(Icons.air, color: const Color.fromRGBO(37, 99, 235, 1), size: 30),
                   ),
                   SizedBox(width: 16),
                   Expanded(
@@ -618,7 +628,7 @@ class _BirdWatchExplorerState extends State<BirdWatchExplorer> {
             ),
             TextButton(
               onPressed: _fetchBirdData,
-              child: Text("Try again", style: TextStyle(color: Colors.green[700])),
+              child: Text("Try again", style: TextStyle(color:  const Color.fromARGB(255, 202, 226, 255))),
             ),
           ],
         ),

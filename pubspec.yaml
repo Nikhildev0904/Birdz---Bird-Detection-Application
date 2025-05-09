@@ -77,7 +77,6 @@ flutter:
     - assets/Spot-billed Pelician.JPG
     - assets/White-breasted Waterhen.JPG
     - assets/Yellow wattled lapwing.jpg
-    - assets/Birdz.png
     - assets/background_image_classify.png
     - assets/background_test.png
     - assets/animations/b3.json
@@ -85,6 +84,7 @@ flutter:
     - assets/animations/loading.json
     - assets/Painted Stork.jpg
     - assets/animations/splash.json
+    - assets/bird_logo.png
     
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
