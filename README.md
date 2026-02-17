@@ -221,14 +221,3 @@ If you want to run your own classification backend:
 3. Upload the AAB file
 4. Complete store listing and release process
 
-#### **Firebase Hosting (Web)**
-```bash
-# Install Firebase CLI
-npm install -g firebase-tools
-
-# Initialize Firebase
-firebase init
-
-# Deploy
-firebase deploy
-```
