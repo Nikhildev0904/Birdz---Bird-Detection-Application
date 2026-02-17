@@ -43,18 +43,26 @@
 
 ## 📸 Screenshots  
 
-### **Home Screen**  
+### **Home Screen**
 
-![image](https://github.com/user-attachments/assets/aa1237ac-bcd0-47e3-86ad-ff0022bbfd4f).  ![image](https://github.com/user-attachments/assets/3d414826-4e24-40e1-ad92-dbf85cdc0357)
-    ![image](https://github.com/user-attachments/assets/36aed81d-cd40-467b-b26a-1ec957f1d974)  
+<img width="299" height="610" alt="image" src="https://github.com/user-attachments/assets/adba6fa0-f326-4516-986a-6c8bd2fa3bfd" />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<img width="298" height="610" alt="image" src="https://github.com/user-attachments/assets/883cf245-69c0-4d4a-bb2e-b392ecb8de21" />
 
 
 
 
 ### **Validation && Classification Screen**
 
-![image](https://github.com/user-attachments/assets/2c9a4d62-6857-496c-a707-c2cee2941653)
-![image](https://github.com/user-attachments/assets/eac41a0d-4667-417d-81a2-07966c753c60)
+<img width="240" height="560" alt="image" src="https://github.com/user-attachments/assets/9dafac66-c9da-4f1c-a457-96f8d50155ce" />
+&nbsp;&nbsp;&nbsp;
+<img width="240" height="560" alt="image" src="https://github.com/user-attachments/assets/f341b62f-db1e-4a91-8947-f6e041dcddad" />
+&nbsp;&nbsp;&nbsp;
+<img width="240" height="560" alt="image" src="https://github.com/user-attachments/assets/c68a0db7-c5d6-4c51-9d92-bd872a7c8d3a" />
+&nbsp;&nbsp;&nbsp;
+<img width="240" height="560" alt="image" src="https://github.com/user-attachments/assets/9bffa0a4-3cb3-40c6-813d-297b8df9a487" />
+
+
 
 ---
 
@@ -224,7 +232,3 @@ firebase init
 # Deploy
 firebase deploy
 ```
-
----
-
-## 📱 Features Overview  
