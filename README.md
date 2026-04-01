@@ -5,7 +5,7 @@
 
 ## ✨ Features  
 - 🐦 **Bird Classification**: Identifies bird species using a ResNet-based classification model with 93% accuracy.  
-- 🎯 **Bird Detection**: Detects birds in images using YOLOv8 for precise localization.  
+- 🎯 **Bird Detection**: Detects birds in images using YOLOv12 for precise localization.  
 - 📱 **User-Friendly Interface**: Intuitive UI with a carousel slider, search functionality, and detailed bird profiles.  
 - 📂 **Contribute to Dataset**: Allows users to upload bird images to expand the dataset and improve the classification model.  
 
@@ -21,7 +21,7 @@
 
 ### **Machine Learning**  
 - **ResNet**: For accurate bird species classification.  
-- **YOLOv8**: For bird detection and localization in images.  
+- **YOLOv12**: For bird detection and localization in images.  
 
 ### **Dataset**  
 - **Size**: 6952 images of Indian bird species.  
@@ -31,7 +31,7 @@
 
 ## 🧭 How It Works  
 1. **Upload an image of a bird.**  
-2. The app detects if a bird is present using **YOLOv8**.  
+2. The app detects if a bird is present using **YOLOv12**.  
 3. If detected, **EfficientNetB7** classifies the bird species.  
 4. View detailed information, including habitat, behavior, and images of the bird.  
 
